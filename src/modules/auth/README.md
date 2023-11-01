@@ -6,3 +6,8 @@
   - 무효할 시 Refresh Token 검사
 - Refresh Token 생성
 - 사용자 로그아웃 시 Token 파괴
+
+### DB 결과 처리
+
+- SEELCT 결과 값이 null : length == 0
+- DELETE, UPDATE, INSERT 결과 : result.affectedRows
