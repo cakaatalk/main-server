@@ -10,5 +10,7 @@ router.post("/updateProfile", userController.updateProfile);
 router.get("/searchUser", userController.searchUser);
 router.post("/addUser", userController.addUser);
 router.post("/deleteUser/:userId", userController.deleteUser);
+router.get("/findUser", userController.findUser);
+router.get("/findAll", userController.findAllUser);
 
 module.exports = router;

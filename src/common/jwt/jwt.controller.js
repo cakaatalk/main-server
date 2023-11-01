@@ -3,12 +3,11 @@ const jwt = require('jsonwebtoken')
 const SECRET_KEY = 'CAKAATALK';
 
 // create token
-exports.createToken = (id, password) => {
+exports.createToken = (email) => {
     return jwt.sign(
         {
             type: 'JWT',
-            nickname: nickname,
-            profile: profile
+            email: email
         },
         SECRET_KEY,
         {

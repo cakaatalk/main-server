@@ -2,10 +2,10 @@ const mysql = require("mysql2");
 
 const connection = mysql.createConnection({
   host: "127.0.0.1",
-  port: 4040,
+  port: 3000,
   user: "root",
   password: "1234",
-  database: "cakaotalk",
+  database: "cakaotalk", // TODO: cakaatalk 으로 수정 필요
 });
 
 connection.connect((err) => {
@@ -16,7 +16,7 @@ connection.connect((err) => {
 
   console.log("Connected to MySQL");
 
-  // console.log("Connected to MySQL with ID", connection.threadId);
+  console.log("Connected to MySQL with ID", connection.threadId);
 
   // connection.query(`
   //     CREATE TABLE USER (
