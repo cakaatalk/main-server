@@ -47,20 +47,22 @@ exports.addFriend = (req, res) => {
 };
 
 exports.findUser = (req, res) => {
-  const userId = req.headers.userId;
+  const userId = req.params.user_id;
   const query = `SELECT id, user_name FROM USER WHERE id = ?`;
   db.query(query, [userId], (error, results) => {
     if (error) {
       res.status(500).json({ error: error.message });
       return;
     }
-    console.log(results);
-    res.json({ data: results });
+    if (results) {
+      res.json({ data: results });
+    } else {
+      res.status(404).send({ error: 'User not found' });
+    }
   })
 }
 
 exports.findAllUser = (req, res) => {
-  const userId = req.headers.userId;
   const query = `SELECT * FROM USER`;
   db.query(query, [userId], (error, results) => {
     if (error) {
