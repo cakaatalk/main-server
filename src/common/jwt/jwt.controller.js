@@ -3,17 +3,22 @@ const jwt = require('jsonwebtoken')
 const SECRET_KEY = 'CAKAATALK';
 
 // create token
-exports.createToken = (email) => {
+exports.generateAccessToken = (email) => {
     return jwt.sign(
-        {
+        payload = {
             type: 'JWT',
             email: email
         },
-        SECRET_KEY,
-        {
+        secret = SECRET_KEY,
+        options = {
             expiresIn: '15m'
         }
     );
+}
+
+exports.destroyAccessToken = (req, res, next) => {
+    req.headers.authorization = "";
+    next();
 }
 
 

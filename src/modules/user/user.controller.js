@@ -46,10 +46,10 @@ exports.addFriend = (req, res) => {
   });
 };
 
-exports.findUser = (req, res) => {
-  const userId = req.query.user_id;
-  const query = `SELECT id, user_name FROM USER WHERE id = ?`;
-  db.query(query, [userId], (error, results) => {
+exports.findUserByEmail = (req, res) => {
+  const email = req.query.email;
+  const query = `SELECT * FROM USER WHERE email = ?`;
+  db.query(query, [email], (error, results) => {
     if (error) {
       res.status(500).json({ error: error.message });
       return;
