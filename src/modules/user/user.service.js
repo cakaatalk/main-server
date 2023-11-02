@@ -7,7 +7,11 @@ exports.findUserByEmail = (email) => {
             if (error) {
                 return reject(error);
             }
-            return resolve(rows);
+            if (rows.length > 0) {
+                return resolve(rows);
+            } else {
+                return reject('User not found');
+            }
         });
     })
 }
