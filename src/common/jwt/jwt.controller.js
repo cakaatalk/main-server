@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken')
-// TODO: env로 빼기
-const SECRET_KEY = 'CAKAATALK';
+const SECRET_KEY = process.env.JWT_SECRET;
 
 exports.generateAccessToken = (email) => {
     return jwt.sign(
@@ -16,6 +15,11 @@ exports.generateAccessToken = (email) => {
     );
 }
 
+exports.generateRefreshToken = (email) => {
+
+}
+
+// TODO: DB에 AccessToken을 저장해 관리
 exports.destroyAccessToken = (req, res, next) => {
     req.headers.authorization = "";
     next();
