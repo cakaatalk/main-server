@@ -34,10 +34,19 @@ exports.logoutAndDestroyToken = async (req, res) => {
 exports.checkUserSession = async (req, res) => {
     try {
         const accessToken = req.headers.authorization;
-        const result = await jwtController.validateToken(accessToken);
+        const refreshToken = extractRefreshTokenFromCookie(req);
+        const result = await jwtController.validateToken(accessToken, refreshToken);
         console.log('Successfuly Authenticateed');
         res.status(200).json({ email: result.email });
     } catch (error) {
         res.status(500).json({ error: error })
     }
 }
+
+// Http Only Cookie에서 RefreshToken을 가져오는 함수
+function extractRefreshTokenFromCookie(req) {
+    // TODO: Http Only Cookie에서 RefreshToken을 가져오는 로직을 작성해주세요.
+    // 쿠키에서 RefreshToken을 추출하고 반환해야 합니다.
+    return req.cookies.refreshToken;
+}
+

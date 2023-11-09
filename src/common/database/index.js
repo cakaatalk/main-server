@@ -7,7 +7,7 @@ const connection = mysql.createConnection({
   port: 3000,
   user: "root",
   password: "1234",
-  database: "cakaotalk", // TODO: cakaatalk 으로 수정 필요
+  database: "cakaatalk",
 });
 
 const connectMongodb = async () => {
