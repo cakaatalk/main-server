@@ -38,12 +38,40 @@ exports.addFriend = (req, res) => {
   const query = "INSERT INTO FRIENDS (user_id, friend_id) VALUES (?, ?)";
   db.query(query, [userId, friendId], (error) => {
     if (error) {
+      console.log(results);
       res.status(500).json({ error: error.message });
       return;
     }
     res.json({ message: "Friend added!" });
   });
 };
+
+exports.findUserByEmail = (req, res) => {
+  const email = req.query.email;
+  const query = `SELECT * FROM USER WHERE email = ?`;
+  db.query(query, [email], (error, results) => {
+    if (error) {
+      res.status(500).json({ error: error.message });
+      return;
+    }
+    if (results.length != 0) {
+      res.json({ data: results });
+    } else {
+      res.status(404).send({ error: 'User not found' });
+    }
+  })
+}
+
+exports.findAllUser = (req, res) => {
+  const query = `SELECT * FROM USER`;
+  db.query(query, [userId], (error, results) => {
+    if (error) {
+      res.status(500).json({ error: error.message });
+    }
+    console.log(results);
+    res.json({ data: results });
+  })
+}
 
 exports.updateProfile = (req, res) => {
   const userId = req.headers.userid;
