@@ -1,4 +1,6 @@
 const mysql = require("mysql2");
+const mongoose = require("mongoose");
+const MONGODB_URL = process.env.MONGODB_URL;
 
 const connection = mysql.createConnection({
   host: "127.0.0.1",
@@ -7,6 +9,18 @@ const connection = mysql.createConnection({
   password: "1234",
   database: "cakaotalk", // TODO: cakaatalk 으로 수정 필요
 });
+
+const connectMongodb = async () => {
+  try {
+    await mongoose.connect(MONGODB_URL,
+      { useUnifiedTopology: true, useNewUrlParser: true });
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    process.exit(1);
+  }
+}
+
+connectMongodb();
 
 connection.connect((err) => {
   if (err) {

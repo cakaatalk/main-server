@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const AuthToken = require('../../modules/auth/AuthToekn.js')
+const jwtService = require('./jwt.service.js')
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
 
@@ -31,39 +32,56 @@ exports.generateRefreshToken = (email) => {
     )
 }
 
-exports.generateTokens = async (email) => {
+exports.generateTokens = async (user) => {
     try {
+        const accessToken = this.generateAccessToken(user.email);
+        const refreshToken = this.generateRefreshToken(user.email);
 
+        // DB에서 Token 있는지 검사
+        const existRefreshToken = await jwtService.checkRefreshToken(refreshToken);
+        if (existRefreshToken) await jwtService.deleteRefreshToken(existRefreshToken);
 
-        const userToken = await UserToken.findOne({ userId: user._id });
-        if (userToken) await userToken.remove();
-
-        await new UserToken({ userId: user._id, token: refreshToken }).save();
         return Promise.resolve({ accessToken, refreshToken });
     } catch (err) {
         return Promise.reject(err);
     }
 };
 
-// TODO: DB에 AccessToken을 저장해 관리
-exports.destroyAccessToken = (req, res, next) => {
-    req.headers.authorization = "";
-    next();
-}
 
-
-exports.validateToken = (accessToken) => {
+exports.verifyAccessToken = (accessToken) => {
     return new Promise((resolve, reject) => {
         try {
-            resolve(jwt.verify(accessToken, SECRET_KEY));
+            resolve(jwt.verify(accessToken, ACCESS_SECRET_KEY));
         }
         catch (error) {
             if (error.name === 'TokenExpiredError') {
-                reject('토큰이 만료되었습니다.');
+                console.log('Access Token이 만료되었습니다.');
+                // AccessToken이 만료되었을 경우, RefreshToken을 DB에서 조회한다.
+                // RefreshToken이 있을 경우 검증한다
+                // 검증이 유효할 경우 AccessToken을 재발급하고 정상 처리한다
+                // 검증이 유효하지 않을 경우 RefreshToken을 삭제하고 사용자가 로그인하도록 유도한다
             }
             if (error.name === 'JsonWebTokenError') {
-                reject('유효하지 않은 토큰입니다.');
+                reject('유효하지 않은 Access Token입니다.');
             }
         }
     });
 }
+
+exports.verifyRefreshToken = (refreshToken) => {
+    return new Promise((resolve, reject) => {
+        try {
+            // DB에 RefreshToken이 있나 체크
+            jwtService.checkRefreshToken(refreshToken);
+            resolve(jwt.verify(accessToken, REFRESH_SECRET_KEY));
+        }
+        catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                reject('Refresh Token이 만료되었습니다.');
+            }
+            if (error.name === 'JsonWebTokenError') {
+                reject('유효하지 않은 Refresh Token입니다.');
+            }
+        }
+    });
+};
