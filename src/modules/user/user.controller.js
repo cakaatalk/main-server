@@ -21,7 +21,7 @@ exports.getFriendsList = (req, res) => {
 };
 
 exports.getProfile = (req, res) => {
-  const userId = req.params.userid;
+  const userId = req.params.userId;
   const query = "SELECT * FROM PROFILE WHERE user_id = ?";
   db.query(query, [userId], (error, results) => {
     if (error) {
@@ -61,7 +61,8 @@ exports.updateProfile = (req, res) => {
 };
 
 exports.searchUser = (req, res) => {
-  const searchTerm = `%${req.query.term}%`;
+  const searchTerm = `%${req.query.name}%`;
+  console.log(searchTerm);
   const query = "SELECT id, user_name FROM USER WHERE user_name LIKE ?";
   db.query(query, [searchTerm], (error, results) => {
     if (error) {
