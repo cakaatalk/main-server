@@ -1,131 +1,154 @@
 const db = require("../../common/database");
+const UserRepository = require("../../repositories/user.repository");
+const User = require("../../entities/user.entities");
+const userRepository = new UserRepository(db);
+// exports.getFriendsList = (req, res) => {
+//   const userId = req.headers.userid;
 
-exports.getFriendsList = (req, res) => {
-  const userId = req.headers.userid;
+//   const query = `
+//     SELECT p.image_url, u.user_name, p.comment
+//     FROM FRIENDS f
+//     JOIN USER u ON f.friend_id = u.id
+//     JOIN PROFILE p ON f.friend_id = p.user_id
+//     WHERE f.user_id = ?;
+//   `;
 
-  const query = `
-    SELECT p.image_url, u.user_name, p.comment
-    FROM FRIENDS f
-    JOIN USER u ON f.friend_id = u.id
-    JOIN PROFILE p ON f.friend_id = p.user_id
-    WHERE f.user_id = ?;
-  `;
+//   db.query(query, [userId], (error, results) => {
+//     if (error) {
+//       res.status(500).json({ error: error.message });
+//       return;
+//     }
+//     res.json({ data: results });
+//   });
+// };
 
-  db.query(query, [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
+exports.getFriendsList = async (req, res) => {
+  const userId = req.headers.userId;
+  console.log(req);
+  try {
+    // const userRepository = new UserRepository(db);
+    const user = await userRepository.findFriendsByEmail(userId);
+    if (user) {
+      res.json({ data: user });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    res.json({ data: results });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.getProfile = (req, res) => {
+exports.getProfile = async (req, res) => {
   const userId = req.params.userId;
-  const query = "SELECT * FROM PROFILE WHERE user_id = ?";
-  db.query(query, [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
+
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.findById(userId);
+    if (user) {
+      res.json({ data: results[0] });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    res.json({ data: results[0] });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.addFriend = (req, res) => {
+exports.addFriend = async (req, res) => {
   const userId = req.headers.userid;
   const friendId = req.params.friendId;
-  const query = "INSERT INTO FRIENDS (user_id, friend_id) VALUES (?, ?)";
-  db.query(query, [userId, friendId], (error) => {
-    if (error) {
-      console.log(results);
-      res.status(500).json({ error: error.message });
-      return;
+
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.addFriend(userId, friendId);
+    if (user) {
+      res.json({ message: "Friend added!" });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    res.json({ message: "Friend added!" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.findUserByEmail = (req, res) => {
+exports.findUserByEmail = async (req, res) => {
   const email = req.query.email;
-  const query = `SELECT * FROM USER WHERE email = ?`;
-  db.query(query, [email], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    if (results.length != 0) {
-      res.json({ data: results });
+
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.findByEmail(email);
+    if (user) {
+      res.json({ data: result });
     } else {
-      res.status(404).send({ error: 'User not found' });
+      res.status(404).send({ error: "User not found" });
     }
-  })
-}
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-exports.findAllUser = (req, res) => {
-  const query = `SELECT * FROM USER`;
-  db.query(query, [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
+exports.findAllUser = async (req, res) => {
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.findAll();
+    if (user) {
+      res.json({ data: result });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    console.log(results);
-    res.json({ data: results });
-  })
-}
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-exports.updateProfile = (req, res) => {
+exports.updateProfile = async (req, res) => {
   const userId = req.headers.userid;
   const imageUrl = req.body.imageUrl;
   const comment = req.body.comment;
-  const query =
-    "UPDATE PROFILE SET image_url = ?, comment = ? WHERE user_id = ?";
-  db.query(query, [imageUrl, comment, userId], (error) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
+
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.updateProfile(userId, imageUrl, comment);
+    if (user) {
+      res.json({ message: "Profile updated!" });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    res.json({ message: "Profile updated!" });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.searchUser = (req, res) => {
-  const searchTerm = `%${req.query.name}%`;
-  console.log(searchTerm);
-  const query = "SELECT id, user_name FROM USER WHERE user_name LIKE ?";
-  db.query(query, [searchTerm], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
+exports.searchUser = async (req, res) => {
+  const nameForSearch = `%${req.query.name}%`;
+
+  try {
+    const userRepository = new UserRepository(db);
+    const user = await userRepository.searchUserByName(nameForSearch);
+    if (user) {
+      res.json({ data: results });
+    } else {
+      res.status(404).send({ error: "User not found" });
     }
-    res.json({ data: results });
-  });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.addUser = (req, res) => {
+exports.addUser = async (req, res) => {
   const { userName, email, password } = req.body;
+  try {
+    const user = new User({
+      user_name: userName,
+      email: email,
+      password: password,
+    });
 
-  db.query(
-    "INSERT INTO USER (user_name, email, password) VALUES (?, ?, ?)",
-    [userName, email, password],
-    (err, results) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-
-      const userId = results.insertId;
-      db.query("INSERT INTO PROFILE (user_id) VALUES (?)", [userId], (err2) => {
-        if (err2) {
-          res.status(500).json({ error: err2.message });
-          return;
-        }
-        res.json({
-          message: "User and profile added successfully",
-          userId: userId,
-        });
-      });
-    }
-  );
+    const result = await userRepository.saveUser(user);
+    res.json({ data: result });
+  } catch (error) {
+    res.status(500).json({ error: error });
+  }
 };
 
 exports.deleteUser = (req, res) => {

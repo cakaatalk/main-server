@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
   port: 4040,
   user: "root",
   password: "1234",
-  database: "cakaotalk",
+  database: "cakaatalk",
 });
 
 // Connect to the MySQL server
@@ -20,12 +20,12 @@ connection.connect((err) => {
 
   // Replace "YOUR_QUERY_HERE" with your actual query
   connection.query(
-    `CREATE TABLE PROFILE (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    `CREATE TABLE FRIENDS (
     user_id INT,
-    image_url VARCHAR(255),  -- S3 URL 또는 로컬 파일 경로
-    comment VARCHAR(45),
-    FOREIGN KEY (user_id) REFERENCES USER(id)
+    friend_id INT,
+    PRIMARY KEY (user_id, friend_id),
+    FOREIGN KEY (user_id) REFERENCES USER(id),
+    FOREIGN KEY (friend_id) REFERENCES USER(id)
 );`,
     (queryErr, results, fields) => {
       if (queryErr) {
