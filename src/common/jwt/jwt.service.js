@@ -19,7 +19,7 @@ exports.checkRefreshToken = (refreshToken) => {
 
 exports.insertRefreshToken = (email, refreshToken) => {
     return new Promise((resolve, reject) => {
-        mysql.query('INSERT INTO AUTH (email, refresh_token) VALUES (?, ?);', [email, refreshToken], (err, results) => {
+        mysql.query('INSERT INTO AUTH (refresh_token, email) VALUES (?, ?);', [refreshToken, email], (err, results) => {
             if (err) {
                 reject(err);
             } else {
