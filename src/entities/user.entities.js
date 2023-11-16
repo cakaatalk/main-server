@@ -1,9 +1,4 @@
-// CREATE TABLE USER (
-//     id INT PRIMARY KEY AUTO_INCREMENT,
-//     user_name VARCHAR(45),
-//     email VARCHAR(45) NOT NULL UNIQUE,
-//     password VARCHAR(45) NOT NULL
-// );
+const BaseEntity = require("../common/database/entity/baseEntity");
 
 class User extends BaseEntity {
   /**
@@ -32,6 +27,8 @@ class User extends BaseEntity {
 
   // 필요한 경우 User 클래스에 특화된 메소드 추가
 }
+
+module.exports = User;
 
 /**
  * 클래스 프로퍼티의 타입 정보를 이용해 CREATE TABLE SQL문을 생성합니다.
