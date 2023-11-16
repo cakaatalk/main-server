@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-const AuthToken = require('../../modules/auth/AuthToekn.js')
 const jwtService = require('./jwt.service.js')
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
@@ -32,10 +31,11 @@ exports.generateRefreshToken = (email) => {
     )
 }
 
-exports.generateTokens = async (user) => {
+exports.generateTokens = async (email) => {
     try {
-        const accessToken = this.generateAccessToken(user.email);
-        const refreshToken = this.generateRefreshToken(user.email);
+        const accessToken = this.generateAccessToken(email);
+        const refreshToken = this.generateRefreshToken(email);
+        const result = await jwtService.insertRefreshToken(email, refreshToken);
 
         // DB에서 Token 있는지 검사
         const existRefreshToken = await jwtService.checkRefreshToken(refreshToken);
@@ -47,11 +47,19 @@ exports.generateTokens = async (user) => {
     }
 };
 
-exports.validateToken = (accessToken, refreshToken) => {
-
+exports.validateToken = async (accessToken, refreshToken) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const email = await verifyAccessToken(accessToken, refreshToken);
+            resolve(email);
+        } catch (err) {
+            console.err("Authentication 실패");
+            reject(err);
+        }
+    })
 }
 
-function verifyAccessToken(accessToken) {
+function verifyAccessToken(accessToken, refreshToken) {
     return new Promise((resolve, reject) => {
         try {
             resolve(jwt.verify(accessToken, ACCESS_SECRET_KEY));

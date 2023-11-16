@@ -17,10 +17,22 @@ exports.checkRefreshToken = (refreshToken) => {
     });
 }
 
+exports.insertRefreshToken = (email, refreshToken) => {
+    return new Promise((resolve, reject) => {
+        mysql.query('INSERT INTO AUTH (email, refresh_token) VALUES (?, ?);', [email, refreshToken], (err, results) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
 // RefreshToken 삭제 함수
 exports.deleteRefreshToken = (refreshToken) => {
     return new Promise((resolve, reject) => {
-        connection.query('DELETE FROM AUTH WHERE refresh_token = ?', [refreshToken], (err, results) => {
+        mysql.query('DELETE FROM AUTH WHERE refresh_token = ?', [refreshToken], (err, results) => {
             if (err) {
                 reject(err);
             } else {

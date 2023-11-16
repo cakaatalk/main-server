@@ -4,15 +4,22 @@ const userService = require('../user/user.service');
 exports.signUpAndGiveToken = async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        const result = await userService.findUserByEmail(email);
+        if (result != undefined || result != null) {
+            throw new Error("Already Existing Email");
+        }
+    } catch (error) {
+        console.error(error);
     }
 }
 
 exports.loginAndGiveToken = async (req, res) => {
     try {
         const email = req.query.email;
+        console.log(email);
         const result = await userService.findUserByEmail(email);
-        const accessToken = jwtController.generateAccessToken(result[0].email);
+        const { accessToken, refreshToken } = await jwtController.generateTokens(result[0].email);
+        res.cookie('refreshToken', refreshToken, { httpOnly: true });
         res.status(200).json({ accessToken: accessToken });
     } catch (error) {
         console.error('Error occurred while finding user by email:', error);
@@ -33,20 +40,24 @@ exports.logoutAndDestroyToken = async (req, res) => {
 // TODO: next 넣어서 미들웨어로 만들기
 exports.checkUserSession = async (req, res) => {
     try {
-        const accessToken = req.headers.authorization;
+        const accessToken = req.headers.Authorization;
         const refreshToken = extractRefreshTokenFromCookie(req);
+        console.log("refreshToken: " + refreshToken);
         const result = await jwtController.validateToken(accessToken, refreshToken);
         console.log('Successfuly Authenticateed');
         res.status(200).json({ email: result.email });
     } catch (error) {
-        res.status(500).json({ error: error })
+        res.status(500).json("토큰 없음");
     }
 }
 
 // Http Only Cookie에서 RefreshToken을 가져오는 함수
 function extractRefreshTokenFromCookie(req) {
     // TODO: Http Only Cookie에서 RefreshToken을 가져오는 로직을 작성해주세요.
-    // 쿠키에서 RefreshToken을 추출하고 반환해야 합니다.
-    return req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken
+    if (refreshToken) {
+        return req.cookies.refreshToken;
+    }
+    throw new Error("Refresh Token이 Cookie에 존재하지 않음");
 }
 
