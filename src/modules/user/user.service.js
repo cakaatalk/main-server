@@ -1,6 +1,5 @@
 const db = require("../../common/database");
 
-
 exports.findUserByEmail = (email) => {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM USER WHERE email = ?`;
@@ -11,11 +10,11 @@ exports.findUserByEmail = (email) => {
       if (rows.length > 0) {
         return resolve(rows);
       } else {
-        return reject('User not found');
+        return reject("User not found");
       }
     });
-  })
-}
+  });
+};
 
 // 동재 코드
 
