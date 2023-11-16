@@ -1,7 +1,22 @@
 const express = require("express");
+const http = require('http');
+const socketIo = require('socket.io');
+const {initSocket} = require('./src/modules/socket/chat.controller.js');
+
 require('dotenv').config();
 const app = express();
 const port = 8080;
+const socketPort = 3001;
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+initSocket(io);
 
 // const db = require("./db");
 
@@ -15,4 +30,8 @@ app.use("/api/auth", authRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+server.listen(socketPort, () => {
+  console.log('running on port '+socketPort);
 });

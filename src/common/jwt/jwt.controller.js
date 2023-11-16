@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const AuthToken = require('../../modules/auth/AuthToekn.js')
+// const AuthToken = require('../../modules/auth/AuthToekn.js')
 const jwtService = require('./jwt.service.js')
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;

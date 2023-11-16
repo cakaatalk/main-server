@@ -1,12 +1,12 @@
 const jwtController = require('../../common/jwt/jwt.controller');
 const userService = require('../user/user.service');
 
-exports.signUpAndGiveToken = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+// exports.signUpAndGiveToken = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
 
-    }
-}
+//     }
+// }
 
 exports.loginAndGiveToken = async (req, res) => {
     try {
