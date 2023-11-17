@@ -1,29 +1,31 @@
 const jwtController = require('../../common/jwt/jwt.controller');
 const userService = require('../user/user.service');
+const authService = require('../auth/auth.service');
 
 exports.signUpAndGiveToken = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const result = await userService.findUserByEmail(email);
-        if (result != undefined || result != null) {
-            throw new Error("Already Existing Email");
-        }
+        const user = req.body;
+        await validUser(user.email);
+        await authService.addUser(user);
+        const { accessToken, refreshToken } = await jwtController.generateTokens(user);
+        res.cookie('refreshToken', refreshToken, { httpOnly: true });
+        res.status(200).json({ accessToken: accessToken });
     } catch (error) {
-        console.error(error);
+        res.status(500).send({ error: error.message });
     }
 }
 
 exports.loginAndGiveToken = async (req, res) => {
     try {
-        const email = req.query.email;
-        console.log(email);
-        const result = await userService.findUserByEmail(email);
-        const { accessToken, refreshToken } = await jwtController.generateTokens(result[0].email);
+        const { email, password } = req.body;
+        const result = await authService.findUserByEmailAndPassword(email, password);
+        const { accessToken, refreshToken } = await jwtController.generateTokens(result[0].email, result[0].user_name);
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
         res.status(200).json({ accessToken: accessToken });
     } catch (error) {
-        console.error('Error occurred while finding user by email:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        const message = 'Error occurred while login';
+        console.error('Error occurred while login' + error);
+        res.status(500).json({ error: error, message: message });
     }
 }
 
@@ -51,13 +53,21 @@ exports.checkUserSession = async (req, res) => {
     }
 }
 
-// Http Only Cookie에서 RefreshToken을 가져오는 함수
-function extractRefreshTokenFromCookie(req) {
-    // TODO: Http Only Cookie에서 RefreshToken을 가져오는 로직을 작성해주세요.
-    const refreshToken = req.cookies.refreshToken
+const extractRefreshTokenFromCookie = (req) => {
+    const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
         return req.cookies.refreshToken;
     }
     throw new Error("Refresh Token이 Cookie에 존재하지 않음");
 }
 
+const validUser = async (email) => {
+    try {
+        const result = await userService.findUserByEmail(email);
+        if (result == null || result == undefined) {
+            throw new Error('이미 가입한 이메일입니다.');
+        }
+    } catch (error) {
+        throw error;
+    }
+}
