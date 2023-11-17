@@ -3,11 +3,10 @@ const jwtService = require("./jwt.service.js");
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
 
-exports.generateTokens = async (user) => {
+exports.generateTokens = async (email, user_name) => {
     try {
-        const { email, user_name } = user;
-        const accessToken = this.generateAccessToken({ email, user_name });
-        const refreshToken = this.generateRefreshToken({ email, user_name });
+        const accessToken = generateAccessToken(email, user_name);
+        const refreshToken = generateRefreshToken(email, user_name);
         return Promise.resolve({ accessToken, refreshToken });
     } catch (err) {
         return Promise.reject(err);
@@ -55,12 +54,13 @@ const verifyRefreshToken = (refreshToken) => {
     });
 };
 
-const generateAccessToken = (info) => {
+const generateAccessToken = (email, user_name) => {
     return jwt.sign(
         (payload = {
             type: "JWT",
             time: Date(),
-            info: info
+            email: email,
+            user_name: user_name
         }),
         (secret = ACCESS_SECRET_KEY),
         (options = {
@@ -69,16 +69,24 @@ const generateAccessToken = (info) => {
     );
 };
 
-const generateRefreshToken = (info) => {
-    return jwt.sign(
+const generateRefreshToken = async (email, user_name) => {
+    const refresh_token = jwt.sign(
         (payload = {
             type: "JWT",
             time: Date(),
-            info: info
+            email: email,
+            user_name: user_name
         }),
         (secret = REFRESH_SECRET_KEY),
         (options = {
             expiresIn: "30d",
         })
     );
+
+    try {
+        await jwtService.checkRefreshToken(email, user_name);
+        await jwtService.insertRefreshToken(refresh_token, email, user_name);
+    } catch (err) {
+        throw err;
+    }
 };

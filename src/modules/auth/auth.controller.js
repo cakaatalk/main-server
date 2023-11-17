@@ -7,7 +7,7 @@ exports.signUpAndGiveToken = async (req, res) => {
         const user = req.body;
         await validUser(user.email);
         await authService.addUser(user);
-        const { accessToken, refreshToken } = await jwtController.generateTokens(user);
+        const { accessToken, refreshToken } = await jwtController.generateTokens(user.email, user.user_name);
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
         res.status(200).json({ accessToken: accessToken });
     } catch (error) {
@@ -19,13 +19,14 @@ exports.loginAndGiveToken = async (req, res) => {
     try {
         const { email, password } = req.body;
         const result = await authService.findUserByEmailAndPassword(email, password);
+        if (!result || result == '') {
+            throw new Error('로그인 실패. 이메일 또는 패스워드를 확인해주세요.');
+        }
         const { accessToken, refreshToken } = await jwtController.generateTokens(result[0].email, result[0].user_name);
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
         res.status(200).json({ accessToken: accessToken });
     } catch (error) {
-        const message = 'Error occurred while login';
-        console.error('Error occurred while login' + error);
-        res.status(500).json({ error: error, message: message });
+        res.status(500).send({ error: error.message });
     }
 }
 
