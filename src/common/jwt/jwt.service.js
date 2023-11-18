@@ -1,13 +1,11 @@
 const db = require("../../common/database");
 
 exports.checkRefreshToken = (email, user_name) => {
+    console.log('checkRefreshToken');
     return new Promise((resolve, reject) => {
         db.query('SELECT * FROM AUTH WHERE email = ? AND user_name = ?', [email, user_name], (err, results) => {
             if (err) {
                 return reject(err);
-            }
-            if (results.length > 0) {
-                this.deleteRefreshToken(email, user_name);
             }
             resolve(results);
         });
@@ -15,6 +13,7 @@ exports.checkRefreshToken = (email, user_name) => {
 }
 
 exports.insertRefreshToken = (refresh_token, email, user_name) => {
+    console.log('insertRefreshToken');
     return new Promise((resolve, reject) => {
         db.query('INSERT INTO AUTH (refresh_token, email, user_name) VALUES (?, ?, ?);', [refresh_token, email, user_name], (err, results) => {
             if (err) {
@@ -26,6 +25,7 @@ exports.insertRefreshToken = (refresh_token, email, user_name) => {
 }
 
 exports.deleteRefreshToken = (email, user_name) => {
+    console.log('deleteRefreshToken');
     return new Promise((resolve, reject) => {
         db.query('DELETE FROM AUTH WHERE email = ? AND user_name = ?', [email, user_name], (err, results) => {
             if (err) {
