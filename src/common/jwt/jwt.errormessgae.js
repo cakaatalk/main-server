@@ -1,6 +1,6 @@
 const ACCESS_TOKEN_ERROR = {
     NOT_EXIST: "AccessToken 없습니다.",
-    EXPIRED: "AccessToken 만료됐습니다.",
+    EXPIRED: "AccessToken이 만료됐습니다.",
     MALFORMED: "AccessToken 형식이 올바르지 않습니다."
 };
 

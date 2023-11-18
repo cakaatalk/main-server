@@ -7,7 +7,7 @@ const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
 
 exports.generateTokens = async (email, user_name) => {
     try {
-        const accessToken = generateAccessToken(email, user_name);
+        const accessToken = await generateAccessToken(email, user_name);
         const refreshToken = await generateRefreshToken(email, user_name);
         return Promise.resolve({ accessToken, refreshToken });
     } catch (err) {
@@ -17,6 +17,7 @@ exports.generateTokens = async (email, user_name) => {
 
 exports.validateTokens = async (accessToken, refreshToken) => {
     try {
+        await valueValidCheck(accessToken, refreshToken);
         return await verifyAccessToken(accessToken);
     } catch (accessTokenError) {
         if (accessTokenError instanceof jwt.TokenExpiredError) {
@@ -30,32 +31,34 @@ exports.validateTokens = async (accessToken, refreshToken) => {
     }
 };
 
-const verifyAccessToken = (accessToken) => {
-    console.log('verifyAccessToken');
-    if (!accessToken || accessToken == '') {
-        throw new Error(ACCESS_TOKEN_ERROR.NOT_EXIST);
+exports.deleteRefreshToken = async (refreshToken) => {
+    try {
+        const { email, user_name } = jwt.decode(refreshToken);
+        await jwtService.deleteRefreshToken(email, user_name);
+    } catch (error) {
+        throw error;
     }
-    return new Promise((resolve, reject) => {
-        try {
-            const decodedToken = jwt.verify(accessToken, ACCESS_SECRET_KEY);
-            return resolve(decodedToken);
-        } catch (error) {
-            if (error instanceof jwt.TokenExpiredError) {
-                console.error(ACCESS_TOKEN_ERROR.EXPIRED);
-                return reject(error);
-            }
-            console.error(ACCESS_TOKEN_ERROR.MALFORMED);
-            error.message = ACCESS_TOKEN_ERROR.MALFORMED;
-            return reject(error);
-        }
-    });
 }
 
-const verifyRefreshToken = async (refreshToken) => {
-    console.log('verifyRefreshToken');
-    if (!refreshToken || refreshToken == '') {
-        throw new Error(REFRESH_TOKEN_ERROR.NOT_EXIST);
+const verifyAccessToken = async (accessToken) => {
+    try {
+        const decodedToken = jwt.verify(accessToken, ACCESS_SECRET_KEY);
+        return decodedToken;
+    } catch (error) {
+        if (error instanceof jwt.TokenExpiredError) {
+            console.error(ACCESS_TOKEN_ERROR.EXPIRED);
+            error.message = ACCESS_TOKEN_ERROR.EXPIRED;
+            throw error;
+        }
+        if (error instanceof jwt.JsonWebTokenError) {
+            error.message = ACCESS_TOKEN_ERROR.MALFORMED;
+            throw error;
+        }
+        throw error;
     }
+};
+
+const verifyRefreshToken = async (refreshToken) => {
     try {
         const { email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
         const newTokens = await this.generateTokens(email, user_name);
@@ -65,20 +68,19 @@ const verifyRefreshToken = async (refreshToken) => {
         };
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
-            console.error(REFRESH_TOKEN_ERROR.EXPIRED);
             error.message = REFRESH_TOKEN_ERROR.EXPIRED;
-            const { email, user_name } = jwt.decode(refreshToken);
-            jwtService.deleteRefreshToken(email, user_name);
+            await this.deleteRefreshToken(refreshToken);
             throw error;
         }
-        console.error(REFRESH_TOKEN_ERROR.MALFORMED);
-        error.message = REFRESH_TOKEN_ERROR.MALFORMED;
+        if (error instanceof jwt.JsonWebTokenError) {
+            error.message = REFRESH_TOKEN_ERROR.MALFORMED;
+            throw error;
+        }
         throw error;
     }
 };
 
-const generateAccessToken = (email, user_name) => {
-    console.log('AccessToken 발급');
+const generateAccessToken = async (email, user_name) => {
     return jwt.sign(
         (payload = {
             type: "JWT",
@@ -94,7 +96,6 @@ const generateAccessToken = (email, user_name) => {
 };
 
 const generateRefreshToken = async (email, user_name) => {
-    console.log('RefreshToken 발급');
     const refreshToken = jwt.sign(
         (payload = {
             type: "JWT",
@@ -104,13 +105,13 @@ const generateRefreshToken = async (email, user_name) => {
         }),
         (secret = REFRESH_SECRET_KEY),
         (options = {
-            expiresIn: "2m",
+            expiresIn: "1m",
         })
     );
     try {
-        const results = await jwtService.checkRefreshToken(email, user_name);
+        const results = await jwtService.checkRefreshToken(email, user_name)
         if (results.length > 0) {
-            jwtService.deleteRefreshToken(email, user_name);
+            await jwtService.deleteRefreshToken(email, user_name);
         }
         await jwtService.insertRefreshToken(refreshToken, email, user_name);
         return refreshToken;
@@ -119,12 +120,11 @@ const generateRefreshToken = async (email, user_name) => {
     }
 };
 
-const isObjectEmpty = async (obj) => {
-    if (obj instanceof Object) {
-        if (Object.keys(obj).length === 0) {
-            return true;
-        }
-        return false;
+exports.valueValidCheck = async (accessToken, refreshToken) => {
+    if (!accessToken || accessToken == '' || accessToken === undefined || accessToken === 'undefined') {
+        throw new Error('Access 토큰 값이 없습니다');
     }
-    return false;
+    if (!refreshToken || refreshToken == '' || refreshToken === undefined || refreshToken === 'undefined') {
+        throw new Error('Refresh 토큰 값이 없습니다');
+    }
 }

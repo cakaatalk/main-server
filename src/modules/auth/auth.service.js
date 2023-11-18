@@ -1,6 +1,6 @@
 const db = require("../../common/database");
 
-exports.findUserByEmailAndPassword = async (email, password) => {
+exports.findUserByEmailAndPassword = (email, password) => {
     const query =
         `SELECT * FROM USER 
         WHERE email = '${email}' AND password = '${password}';`;
@@ -15,7 +15,7 @@ exports.findUserByEmailAndPassword = async (email, password) => {
     })
 }
 
-exports.addUser = async (user) => {
+exports.addUser = (user) => {
     return new Promise((resolve, reject) => {
         const { user_name, email, password } = user;
         db.query(`INSERT INTO USER (user_name, email, password) VALUES(?, ?, ?)`,

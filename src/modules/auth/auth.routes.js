@@ -9,5 +9,6 @@ authRouter.post('/signup', authController.signUpAndGiveToken);
 authRouter.post('/login', authController.loginAndGiveToken);
 authRouter.post('/logout', authController.logoutAndDestroyToken);
 authRouter.get('/session', authController.checkUserSession);
+authRouter.get('/info', authController.checkUserSession, authController.info);
 
 module.exports = authRouter;
