@@ -90,7 +90,7 @@ const generateAccessToken = async (email, user_name) => {
         }),
         (secret = ACCESS_SECRET_KEY),
         (options = {
-            expiresIn: "1m",
+            expiresIn: "5m",
         })
     );
 };
@@ -105,7 +105,7 @@ const generateRefreshToken = async (email, user_name) => {
         }),
         (secret = REFRESH_SECRET_KEY),
         (options = {
-            expiresIn: "1m",
+            expiresIn: "10m",
         })
     );
     try {
