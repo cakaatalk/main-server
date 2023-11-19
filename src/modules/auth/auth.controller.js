@@ -41,29 +41,30 @@ exports.logoutAndDestroyToken = async (req, res) => {
 }
 
 exports.checkUserSession = async (req, res, next) => {
-    console.log('*** check session ***')
     try {
         const accessToken = req.headers.authorization;
-        const refreshToken = req.cookies.refreshToken;
-
-        const result = await jwtController.validateTokens(accessToken, refreshToken);
-        if ('newRefreshToken' in result) {
-            const { newAccessToken, email, user_name } = result;
-            req.user = { email, user_name, accessToken: newAccessToken };
-            res.cookie('refreshToken', encodeURIComponent(result.newRefreshToken), { httpOnly: true });
-            next();
-        }
+        const result = await jwtController.verifyAccessToken(accessToken);
         const { email, user_name } = result;
         req.user = { email, user_name };
         next();
     } catch (error) {
-        await clearTokens(req, res);
         res.status(STATUS_CODES.BAD_REQUEST).send({ message: error.message });
     }
 }
 
 exports.info = async (req, res) => {
     res.send(`Welcome, ${JSON.stringify(req.user)}!`);
+}
+
+exports.refreshAccessToken = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    try {
+        const result = await jwtController.verifyRefreshToken(refreshToken);
+        res.cookie('refreshToken', encodeURIComponent(result.newRefreshToken), { httpOnly: true });
+        res.status(STATUS_CODES.CREATED).json({ accessToken: result.newAccessToken });
+    } catch (error) {
+        res.status(STATUS_CODES.BAD_REQUEST).send({ message: error.message });
+    }
 }
 
 const validUser = async (email) => {
@@ -79,9 +80,7 @@ const validUser = async (email) => {
 
 const clearTokens = async (req, res) => {
     try {
-        const accessToken = req.headers.authorization;
         const refreshToken = req.cookies.refreshToken;
-        await jwtController.valueValidCheck(accessToken, refreshToken);
         res.clearCookie('refreshToken');
         await jwtController.deleteRefreshToken(refreshToken);
     } catch (error) {

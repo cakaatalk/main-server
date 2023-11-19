@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const jwtService = require("./jwt.service.js");
-const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./jwt.errormessgae.js");
+const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
+const DuplicatedError = require('./error/jwt.customError.js');
 
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
@@ -15,22 +16,6 @@ exports.generateTokens = async (email, user_name) => {
     }
 };
 
-exports.validateTokens = async (accessToken, refreshToken) => {
-    try {
-        await valueValidCheck(accessToken, refreshToken);
-        return await verifyAccessToken(accessToken);
-    } catch (accessTokenError) {
-        if (accessTokenError instanceof jwt.TokenExpiredError) {
-            try {
-                return await verifyRefreshToken(refreshToken);
-            } catch (refreshTokenError) {
-                throw refreshTokenError;
-            }
-        }
-        throw accessTokenError;
-    }
-};
-
 exports.deleteRefreshToken = async (refreshToken) => {
     try {
         const { email, user_name } = jwt.decode(refreshToken);
@@ -40,8 +25,9 @@ exports.deleteRefreshToken = async (refreshToken) => {
     }
 }
 
-const verifyAccessToken = async (accessToken) => {
+exports.verifyAccessToken = async (accessToken) => {
     try {
+        await this.valueValidCheck(accessToken);
         const decodedToken = jwt.verify(accessToken, ACCESS_SECRET_KEY);
         return decodedToken;
     } catch (error) {
@@ -54,13 +40,19 @@ const verifyAccessToken = async (accessToken) => {
             error.message = ACCESS_TOKEN_ERROR.MALFORMED;
             throw error;
         }
+        error.message = ACCESS_TOKEN_ERROR.NOT_EXIST;
         throw error;
     }
 };
 
-const verifyRefreshToken = async (refreshToken) => {
+exports.verifyRefreshToken = async (refreshToken) => {
     try {
+        await this.valueValidCheck(refreshToken);
         const { email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
+        const result = await jwtService.checkRefreshToken(email, user_name);
+        if (refreshToken != result[0].refresh_token) {
+            throw new DuplicatedError(REFRESH_TOKEN_ERROR.DUPLICATED);
+        }
         const newTokens = await this.generateTokens(email, user_name);
         return {
             newAccessToken: newTokens.accessToken, newRefreshToken: newTokens.refreshToken,
@@ -69,13 +61,16 @@ const verifyRefreshToken = async (refreshToken) => {
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             error.message = REFRESH_TOKEN_ERROR.EXPIRED;
-            await this.deleteRefreshToken(refreshToken);
             throw error;
         }
         if (error instanceof jwt.JsonWebTokenError) {
             error.message = REFRESH_TOKEN_ERROR.MALFORMED;
             throw error;
         }
+        if (error instanceof DuplicatedError) {
+            throw error;
+        }
+        error.message = REFRESH_TOKEN_ERROR.NOT_EXIST;
         throw error;
     }
 };
@@ -90,7 +85,7 @@ const generateAccessToken = async (email, user_name) => {
         }),
         (secret = ACCESS_SECRET_KEY),
         (options = {
-            expiresIn: "5m",
+            expiresIn: "1m",
         })
     );
 };
@@ -109,10 +104,7 @@ const generateRefreshToken = async (email, user_name) => {
         })
     );
     try {
-        const results = await jwtService.checkRefreshToken(email, user_name)
-        if (results.length > 0) {
-            await jwtService.deleteRefreshToken(email, user_name);
-        }
+        await jwtService.deleteRefreshToken(email, user_name);
         await jwtService.insertRefreshToken(refreshToken, email, user_name);
         return refreshToken;
     } catch (err) {
@@ -120,11 +112,8 @@ const generateRefreshToken = async (email, user_name) => {
     }
 };
 
-exports.valueValidCheck = async (accessToken, refreshToken) => {
-    if (!accessToken || accessToken == '' || accessToken === undefined || accessToken === 'undefined') {
-        throw new Error('Access 토큰 값이 없습니다');
-    }
-    if (!refreshToken || refreshToken == '' || refreshToken === undefined || refreshToken === 'undefined') {
-        throw new Error('Refresh 토큰 값이 없습니다');
+exports.valueValidCheck = async (value) => {
+    if (!value || value == '' || value === undefined || value === 'undefined') {
+        throw new Error();
     }
 }

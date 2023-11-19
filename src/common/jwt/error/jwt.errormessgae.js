@@ -7,7 +7,8 @@ const ACCESS_TOKEN_ERROR = {
 const REFRESH_TOKEN_ERROR = {
     NOT_EXIST: "RefreshToken이 없습니다.",
     EXPIRED: "RefreshToken이 만료됐습니다.",
-    MALFORMED: "RefreshToken의 형식이 올바르지 않습니다."
+    MALFORMED: "RefreshToken의 형식이 올바르지 않습니다.",
+    DUPLICATED: "이전에 발급한 RefreshToken입니다."
 };
 
 module.exports = {
