@@ -14,6 +14,7 @@ exports.signUpAndGiveToken = async (req, res) => {
 };
 
 exports.loginAndGiveToken = async (req, res) => {
+  console.log("call");
   try {
     const email = req.query.email;
     console.log(email);

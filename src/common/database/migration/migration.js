@@ -20,12 +20,10 @@ connection.connect((err) => {
 
   // Replace "YOUR_QUERY_HERE" with your actual query
   connection.query(
-    `CREATE TABLE FRIENDS (
-    user_id INT,
-    friend_id INT,
-    PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES USER(id),
-    FOREIGN KEY (friend_id) REFERENCES USER(id)
+    `CREATE TABLE AUTH (
+    auth_id INT PRIMARY KEY AUTO_INCREMENT,
+    refresh_token TEXT,
+    email VARCHAR(255)
 );`,
     (queryErr, results, fields) => {
       if (queryErr) {
