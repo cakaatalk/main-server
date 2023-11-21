@@ -92,7 +92,7 @@ exports.findAllUser = async (req, res) => {
     const userRepository = new UserRepository(db);
     const user = await userRepository.findAll();
     if (user) {
-      res.json({ data: result });
+      res.json({ data: user });
     } else {
       res.status(404).send({ error: "User not found" });
     }

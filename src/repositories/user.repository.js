@@ -93,17 +93,13 @@ class UserRepository {
 
   findAll() {
     return new Promise((resolve, reject) => {
-      this.connection.query(
-        "SELECT * FROM USER;",
-        [email],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results[0] ? new User(results[0]) : null);
-          }
+      this.connection.query("SELECT * FROM USER;", [], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.map((user) => new User(user)));
         }
-      );
+      });
     });
   }
 

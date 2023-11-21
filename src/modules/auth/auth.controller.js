@@ -33,9 +33,11 @@ exports.loginAndGiveToken = async (req, res) => {
       throw new Error("로그인 실패. 이메일 또는 패스워드를 확인해주세요.");
     }
     const { accessToken, refreshToken } = await jwtController.generateTokens(
+      result[0].id,
       result[0].email,
       result[0].user_name
     );
+    // console.log(accessToken, refreshToken)
     res.cookie("refreshToken", encodeURIComponent(refreshToken), {
       httpOnly: true,
     });
@@ -58,8 +60,8 @@ exports.checkUserSession = async (req, res, next) => {
   try {
     const accessToken = req.headers.authorization;
     const result = await jwtController.verifyAccessToken(accessToken);
-    const { email, user_name } = result;
-    req.user = { email, user_name };
+    const { id, email, user_name } = result;
+    req.user = { id, email, user_name };
     next();
   } catch (error) {
     res.status(STATUS_CODES.BAD_REQUEST).send({ message: error.message });

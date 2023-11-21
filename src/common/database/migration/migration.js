@@ -23,7 +23,8 @@ connection.connect((err) => {
     `CREATE TABLE AUTH (
     auth_id INT PRIMARY KEY AUTO_INCREMENT,
     refresh_token TEXT,
-    email VARCHAR(255)
+    user_name VARCHAR(45) NOT NULL,
+    email VARCHAR(45) NOT NULL
 );`,
     (queryErr, results, fields) => {
       if (queryErr) {
