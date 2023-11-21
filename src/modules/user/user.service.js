@@ -7,16 +7,10 @@ exports.findUserByEmail = (email) => {
       if (error) {
         return reject(error);
       }
-      if (rows.length > 0) {
-        return resolve(rows);
-      } else {
-        return reject("User not found");
-      }
+      return resolve(rows);
     });
   });
 };
-
-// 동재 코드
 
 exports.getFriendsList = (userId) => {
   const query = `

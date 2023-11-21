@@ -5,8 +5,11 @@ const authController = require("./auth.controller");
 
 const authRouter = express.Router();
 
-authRouter.get('/login', authController.loginAndGiveToken);
-authRouter.post('/logout', authController.logoutAndDestroyToken);
+authRouter.post('/signup', authController.signUpAndGiveToken);
+authRouter.post('/login', authController.loginAndGiveToken);
+authRouter.post('/logout', authController.checkUserSession, authController.logoutAndDestroyToken);
+authRouter.get('/refresh', authController.refreshAccessToken);
 authRouter.get('/session', authController.checkUserSession);
+authRouter.get('/info', authController.checkUserSession, authController.info);
 
 module.exports = authRouter;
