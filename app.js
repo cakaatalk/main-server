@@ -1,10 +1,9 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-require('dotenv').config();
+require("dotenv").config();
+
 const app = express();
 const port = 8080;
-
-// const db = require("./db");
 
 const routes = require("./src/route");
 const authRouter = require("./src/modules/auth/auth.routes");

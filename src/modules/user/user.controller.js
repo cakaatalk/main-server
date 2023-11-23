@@ -1,26 +1,7 @@
 const db = require("../../common/database");
 const UserRepository = require("../../repositories/user.repository");
-const User = require("../../entities/user.entities");
+const User = require("../../entities/user.entity");
 const userRepository = new UserRepository(db);
-// exports.getFriendsList = (req, res) => {
-//   const userId = req.headers.userid;
-
-//   const query = `
-//     SELECT p.image_url, u.user_name, p.comment
-//     FROM FRIENDS f
-//     JOIN USER u ON f.friend_id = u.id
-//     JOIN PROFILE p ON f.friend_id = p.user_id
-//     WHERE f.user_id = ?;
-//   `;
-
-//   db.query(query, [userId], (error, results) => {
-//     if (error) {
-//       res.status(500).json({ error: error.message });
-//       return;
-//     }
-//     res.json({ data: results });
-//   });
-// };
 
 exports.getFriendsList = async (req, res) => {
   const userId = req.headers.userId;
@@ -39,13 +20,13 @@ exports.getFriendsList = async (req, res) => {
 };
 
 exports.getProfile = async (req, res) => {
-  const userId = req.params.userId;
-
+  const userId = req.user.id;
   try {
     const userRepository = new UserRepository(db);
-    const user = await userRepository.findById(userId);
+    const user = await userRepository.findProfileById(userId);
+    console.log(user);
     if (user) {
-      res.json({ data: results[0] });
+      res.json({ data: user });
     } else {
       res.status(404).send({ error: "User not found" });
     }
@@ -92,7 +73,7 @@ exports.findAllUser = async (req, res) => {
     const userRepository = new UserRepository(db);
     const user = await userRepository.findAll();
     if (user) {
-      res.json({ data: result });
+      res.json({ data: user });
     } else {
       res.status(404).send({ error: "User not found" });
     }

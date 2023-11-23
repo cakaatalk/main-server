@@ -1,4 +1,5 @@
-const User = require("../entities/user.entities");
+const Profile = require("../entities/profile.entity");
+const User = require("../entities/user.entity");
 
 class UserRepository {
   constructor(connection) {
@@ -21,16 +22,17 @@ class UserRepository {
     });
   }
 
-  findById(id) {
+  findProfileById(id) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         "SELECT * FROM PROFILE WHERE user_id = ?",
         [id],
         (error, results) => {
+          console.log(results);
           if (error) {
             reject(error);
           } else {
-            resolve(results[0] ? new User(results[0]) : null);
+            resolve(results[0] ? new Profile(results[0]) : new Profile());
           }
         }
       );
@@ -40,7 +42,7 @@ class UserRepository {
   findByEmail(email) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "SELECT * FROM PROFILE WHERE email = ?",
+        "SELECT * FROM USER WHERE email = ?",
         [email],
         (error, results) => {
           if (error) {
@@ -93,17 +95,13 @@ class UserRepository {
 
   findAll() {
     return new Promise((resolve, reject) => {
-      this.connection.query(
-        "SELECT * FROM USER;",
-        [email],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results[0] ? new User(results[0]) : null);
-          }
+      this.connection.query("SELECT * FROM USER;", [], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.map((user) => new User(user)));
         }
-      );
+      });
     });
   }
 
