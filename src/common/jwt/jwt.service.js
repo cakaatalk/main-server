@@ -1,43 +1,34 @@
-const mysql = require("../../common/database");
+const db = require("../../common/database");
 
-// RefreshToken 검사 함수
-exports.checkRefreshToken = (refreshToken) => {
+exports.checkRefreshToken = (email, user_name) => {
     return new Promise((resolve, reject) => {
-        mysql.query('SELECT * FROM AUTH WHERE refresh_token = ?', [refreshToken], (err, results) => {
+        db.query('SELECT * FROM AUTH WHERE email = ? AND user_name = ?', [email, user_name], (err, results) => {
             if (err) {
-                reject(err);
-            } else {
-                if (results.length > 0) {
-                    resolve(refreshToken); // Token이 존재함
-                } else {
-                    resolve(false); // Token이 존재하지 않음
-                }
+                return reject(err);
             }
+            resolve(results);
         });
     });
 }
 
-exports.insertRefreshToken = (email, refreshToken) => {
+exports.insertRefreshToken = (refresh_token, email, user_name) => {
     return new Promise((resolve, reject) => {
-        mysql.query('INSERT INTO AUTH (refresh_token, email) VALUES (?, ?);', [refreshToken, email], (err, results) => {
+        db.query('INSERT INTO AUTH (refresh_token, email, user_name) VALUES (?, ?, ?);', [refresh_token, email, user_name], (err, results) => {
             if (err) {
-                reject(err);
-            } else {
-                resolve(results);
+                return reject(err);
             }
+            resolve(results);
         });
     });
 }
 
-// RefreshToken 삭제 함수
-exports.deleteRefreshToken = (refreshToken) => {
+exports.deleteRefreshToken = (email, user_name) => {
     return new Promise((resolve, reject) => {
-        mysql.query('DELETE FROM AUTH WHERE refresh_token = ?', [refreshToken], (err, results) => {
+        db.query('DELETE FROM AUTH WHERE email = ? AND user_name = ?', [email, user_name], (err, results) => {
             if (err) {
-                reject(err);
-            } else {
-                resolve();
+                return reject(err);
             }
+            resolve(results);
         });
     });
 }
