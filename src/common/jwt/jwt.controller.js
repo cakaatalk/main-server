@@ -92,7 +92,7 @@ const generateAccessToken = async (id, email, user_name) => {
     }),
     (secret = ACCESS_SECRET_KEY),
     (options = {
-      expiresIn: "1m",
+      expiresIn: "1h",
     })
   );
 };
