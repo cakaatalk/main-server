@@ -3,26 +3,40 @@ const UserRepository = require("../../repositories/user.repository");
 const User = require("../../entities/user.entity");
 const userRepository = new UserRepository(db);
 
-exports.getFriendsList = async (req, res) => {
-  const userId = req.headers.userId;
-  console.log(req);
-  try {
-    // const userRepository = new UserRepository(db);
-    const user = await userRepository.findFriendsByEmail(userId);
+function asyncWrapper(handler) {
+  return async function (req, res, next) {
+    try {
+      await handler.call(this, req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  };
+}
+
+class UserController {
+  constructor() {
+    Object.getOwnPropertyNames(UserController.prototype)
+      .filter(
+        (prop) => typeof this[prop] === "function" && prop !== "constructor"
+      )
+      .forEach((method) => {
+        this[method] = asyncWrapper(this[method]);
+      });
+  }
+
+  async getFriendsList(req, res) {
+    const userId = req.user.id;
+    const user = await userRepository.findFriends(userId);
     if (user) {
       res.json({ data: user });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.getProfile = async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const userRepository = new UserRepository(db);
+  async getProfile(req, res) {
+    const userId = req.user.id;
+
     const user = await userRepository.findProfileById(userId);
     console.log(user);
     if (user) {
@@ -30,95 +44,67 @@ exports.getProfile = async (req, res) => {
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.addFriend = async (req, res) => {
-  const userId = req.headers.userid;
-  const friendId = req.params.friendId;
+  async addFriend(req, res) {
+    const userId = req.user.id;
+    const friendId = req.body.friendId;
 
-  try {
-    const userRepository = new UserRepository(db);
     const user = await userRepository.addFriend(userId, friendId);
     if (user) {
       res.json({ message: "Friend added!" });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.findUserByEmail = async (req, res) => {
-  const email = req.query.email;
+  async findUserByEmail(req, res) {
+    const email = req.query.email;
 
-  try {
-    const userRepository = new UserRepository(db);
     const user = await userRepository.findByEmail(email);
     if (user) {
       res.json({ data: result });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.findAllUser = async (req, res) => {
-  try {
-    const userRepository = new UserRepository(db);
+  async findAllUser(req, res) {
     const user = await userRepository.findAll();
     if (user) {
       res.json({ data: user });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.updateProfile = async (req, res) => {
-  const userId = req.headers.userid;
-  const imageUrl = req.body.imageUrl;
-  const comment = req.body.comment;
+  async updateProfile(req, res) {
+    const userId = req.user.id;
+    const imageUrl = req.body.imageUrl;
+    const comment = req.body.comment;
 
-  try {
-    const userRepository = new UserRepository(db);
     const user = await userRepository.updateProfile(userId, imageUrl, comment);
     if (user) {
       res.json({ message: "Profile updated!" });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.searchUser = async (req, res) => {
-  const nameForSearch = `%${req.query.name}%`;
+  async searchUser(req, res) {
+    const nameForSearch = `%${req.query.name}%`;
 
-  try {
-    const userRepository = new UserRepository(db);
     const user = await userRepository.searchUserByName(nameForSearch);
     if (user) {
       res.json({ data: results });
     } else {
       res.status(404).send({ error: "User not found" });
     }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.addUser = async (req, res) => {
-  const { userName, email, password } = req.body;
-  try {
+  async addUser(req, res) {
+    const { userName, email, password } = req.body;
+
     const user = new User({
       user_name: userName,
       email: email,
@@ -127,26 +113,26 @@ exports.addUser = async (req, res) => {
 
     const result = await userRepository.saveUser(user);
     res.json({ data: result });
-  } catch (error) {
-    res.status(500).json({ error: error });
   }
-};
 
-exports.deleteUser = (req, res) => {
-  const userId = req.params.userId;
+  async deleteUser(req, res) {
+    const userId = req.params.userId;
 
-  db.query("DELETE FROM PROFILE WHERE user_id = ?", [userId], (err) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-
-    db.query("DELETE FROM USER WHERE id = ?", [userId], (err2) => {
-      if (err2) {
-        res.status(500).json({ error: err2.message });
+    db.query("DELETE FROM PROFILE WHERE user_id = ?", [userId], (err) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ message: "User and profile deleted successfully" });
+
+      db.query("DELETE FROM USER WHERE id = ?", [userId], (err2) => {
+        if (err2) {
+          res.status(500).json({ error: err2.message });
+          return;
+        }
+        res.json({ message: "User and profile deleted successfully" });
+      });
     });
-  });
-};
+  }
+}
+
+module.exports = UserController;

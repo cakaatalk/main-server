@@ -12,22 +12,8 @@ exports.findUserByEmail = (email) => {
   });
 };
 
-exports.getFriendsList = (userId) => {
-  const query = `
-    SELECT p.image_url, u.user_name, p.comment
-    FROM FRIENDS f
-    JOIN USER u ON f.friend_id = u.id
-    JOIN PROFILE p ON f.friend_id = p.user_id
-    WHERE f.user_id = ?;
-  `;
-
-  db.query(query, [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ data: results });
-  });
+exports.getFriendsList = async (userId) => {
+  return await userRepository.findFriends(userId);
 };
 
 exports.getProfile = (userId) => {

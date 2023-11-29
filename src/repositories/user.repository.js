@@ -38,7 +38,7 @@ class UserRepository {
       );
     });
   }
-
+  d;
   findByEmail(email) {
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -64,29 +64,34 @@ class UserRepository {
           if (error) {
             reject(error);
           } else {
-            resolve(results[0] ? new User(results[0]) : null);
+            resolve(true);
           }
         }
       );
     });
   }
-
-  findFriendsByEmail(id) {
+  findFriends(id) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         `
-          SELECT p.image_url, u.user_name, p.comment
-          FROM FRIENDS f
-          JOIN USER u ON f.friend_id = u.id
-          JOIN PROFILE p ON f.friend_id = p.user_id
-          WHERE f.user_id = ?;
+        SELECT 
+            u.user_name AS name, 
+            u.email, 
+            p.comment, 
+            p.image_url AS imageURL
+        FROM 
+            FRIENDS f
+            JOIN USER u ON f.friend_id = u.id
+            LEFT JOIN PROFILE p ON u.id = p.user_id
+        WHERE 
+            f.user_id = ?;
         `,
         [id],
         (error, results) => {
           if (error) {
             reject(error);
           } else {
-            resolve(results[0] ? new User(results[0]) : null);
+            resolve(results);
           }
         }
       );
@@ -109,7 +114,23 @@ class UserRepository {
     return new Promise((resolve, reject) => {
       this.connection.query(
         "UPDATE PROFILE SET image_url = ?, comment = ? WHERE user_id = ?",
-        [id, imageUrl, comment],
+        [imageUrl, comment, id],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results[0] ? new User(results[0]) : null);
+          }
+        }
+      );
+    });
+  }
+
+  addProfile(id, imageUrl, comment) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "UPDATE PROFILE SET image_url = ?, comment = ? WHERE user_id = ?",
+        [imageUrl, comment, id],
         (error, results) => {
           if (error) {
             reject(error);
