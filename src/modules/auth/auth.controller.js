@@ -1,13 +1,13 @@
 const jwtController = require('../../common/jwt/jwt.controller');
 const userService = require('../user/user.service');
-const authService = require('../auth/auth.service');
+const authRepository = require('../../repositories/auth.repository');
 const { STATUS_CODES, STATUS_MESSAGES } = require('../../common/http/responseCode');
 
 exports.signUpAndGiveToken = async (req, res) => {
     try {
         const user = req.body;
         await validUser(user.email);
-        await authService.addUser(user);
+        await authRepository.addUser(user);
         const { accessToken, refreshToken } = await jwtController.generateTokens(user.email, user.user_name);
         res.cookie('refreshToken', refreshToken, { httpOnly: true });
         res.status(STATUS_CODES.CREATED).json({ accessToken: accessToken });
@@ -19,7 +19,7 @@ exports.signUpAndGiveToken = async (req, res) => {
 exports.loginAndGiveToken = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const result = await authService.findUserByEmailAndPassword(email, password);
+        const result = await authRepository.findUserByEmailAndPassword(email, password);
         if (!result || result == '') {
             throw new Error('로그인 실패. 이메일 또는 패스워드를 확인해주세요.');
         }

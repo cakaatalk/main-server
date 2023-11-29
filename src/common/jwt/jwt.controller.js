@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const jwt = require("./dsonwebtoken.js");
 const jwtService = require("./jwt.service.js");
 const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
 const DuplicatedError = require('./error/jwt.customError.js');
@@ -79,13 +79,13 @@ const generateAccessToken = async (email, user_name) => {
     return jwt.sign(
         (payload = {
             type: "JWT",
-            time: Date(),
+            time: Date.now(),
             email: email,
             user_name: user_name
         }),
         (secret = ACCESS_SECRET_KEY),
         (options = {
-            expiresIn: "1m",
+            expiresIn: 60 * 60, // 1h
         })
     );
 };
@@ -94,13 +94,13 @@ const generateRefreshToken = async (email, user_name) => {
     const refreshToken = jwt.sign(
         (payload = {
             type: "JWT",
-            time: Date(),
+            time: Date.now(),
             email: email,
             user_name: user_name
         }),
         (secret = REFRESH_SECRET_KEY),
         (options = {
-            expiresIn: "10m",
+            expiresIn: 60 * 60 * 24, // 1day
         })
     );
     try {
