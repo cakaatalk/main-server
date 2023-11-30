@@ -1,124 +1,56 @@
 const db = require("../../common/database");
-const UserRepository = require("../../repositories/user.repository");
 const User = require("../../entities/user.entity");
+const BaseController = require("../../common/dongpring/baseController");
+const UserRepository = require("../../repositories/user.repository");
 const userRepository = new UserRepository(db);
-
-exports.getFriendsList = async (req, res) => {
-  const userId = req.headers.userId;
-  console.log(req);
-  try {
-    // const userRepository = new UserRepository(db);
-    const user = await userRepository.findFriendsByEmail(userId);
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+class UserController extends BaseController {
+  constructor(userService) {
+    super();
+    this.userService = userService;
   }
-};
 
-exports.getProfile = async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.findProfileById(userId);
-    console.log(user);
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  async getFriendsList(req, res) {
+    const userId = req.user.id;
+    return await this.userService.getFriendsList(userId);
   }
-};
 
-exports.addFriend = async (req, res) => {
-  const userId = req.headers.userid;
-  const friendId = req.params.friendId;
-
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.addFriend(userId, friendId);
-    if (user) {
-      res.json({ message: "Friend added!" });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  async getProfile(req, res) {
+    const userId = req.user.id;
+    return await this.userService.getProfile(userId);
   }
-};
 
-exports.findUserByEmail = async (req, res) => {
-  const email = req.query.email;
-
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.findByEmail(email);
-    if (user) {
-      res.json({ data: result });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  async addFriend(req, res) {
+    const userId = req.user.id;
+    const friendId = req.body.friendId;
+    return await this.userService.addFriend(userId, friendId);
   }
-};
 
-exports.findAllUser = async (req, res) => {
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.findAll();
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  async findUserByEmail(req, res) {
+    const email = req.query.email;
+    return await this.userService.findUserByEmail(email);
   }
-};
 
-exports.updateProfile = async (req, res) => {
-  const userId = req.headers.userid;
-  const imageUrl = req.body.imageUrl;
-  const comment = req.body.comment;
-
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.updateProfile(userId, imageUrl, comment);
-    if (user) {
-      res.json({ message: "Profile updated!" });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  async findAllUser(req, res) {
+    return await this.userService.findAllUser();
   }
-};
 
-exports.searchUser = async (req, res) => {
-  const nameForSearch = `%${req.query.name}%`;
+  async updateProfile(req, res) {
+    const userId = req.user.id;
+    const imageUrl = req.body.imageUrl;
+    const comment = req.body.comment;
 
-  try {
-    const userRepository = new UserRepository(db);
-    const user = await userRepository.searchUserByName(nameForSearch);
-    if (user) {
-      res.json({ data: results });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    return await this.userService.updateProfile(userId, imageUrl, comment);
   }
-};
 
-exports.addUser = async (req, res) => {
-  const { userName, email, password } = req.body;
-  try {
+  async searchUser(req, res) {
+    const nameForSearch = `%${req.query.name}%`;
+
+    return await this.userService.searchUser(nameForSearch);
+  }
+
+  async addUser(req, res) {
+    const { userName, email, password } = req.body;
+
     const user = new User({
       user_name: userName,
       email: email,
@@ -127,26 +59,26 @@ exports.addUser = async (req, res) => {
 
     const result = await userRepository.saveUser(user);
     res.json({ data: result });
-  } catch (error) {
-    res.status(500).json({ error: error });
   }
-};
 
-exports.deleteUser = (req, res) => {
-  const userId = req.params.userId;
+  async deleteUser(req, res) {
+    const userId = req.params.userId;
 
-  db.query("DELETE FROM PROFILE WHERE user_id = ?", [userId], (err) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-
-    db.query("DELETE FROM USER WHERE id = ?", [userId], (err2) => {
-      if (err2) {
-        res.status(500).json({ error: err2.message });
+    db.query("DELETE FROM PROFILE WHERE user_id = ?", [userId], (err) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
         return;
       }
-      res.json({ message: "User and profile deleted successfully" });
+
+      db.query("DELETE FROM USER WHERE id = ?", [userId], (err2) => {
+        if (err2) {
+          res.status(500).json({ error: err2.message });
+          return;
+        }
+        res.json({ message: "User and profile deleted successfully" });
+      });
     });
-  });
-};
+  }
+}
+
+module.exports = UserController;
