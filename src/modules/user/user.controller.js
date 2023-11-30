@@ -1,37 +1,17 @@
 const db = require("../../common/database");
-const UserRepository = require("../../repositories/user.repository");
 const User = require("../../entities/user.entity");
+const BaseController = require("../../common/dongpring/baseController");
+const UserRepository = require("../../repositories/user.repository");
 const userRepository = new UserRepository(db);
-
-function asyncWrapper(handler) {
-  return async function (req, res, next) {
-    try {
-      await handler.call(this, req, res, next);
-    } catch (error) {
-      next(error);
-    }
-  };
-}
-
-class UserController {
-  constructor() {
-    Object.getOwnPropertyNames(UserController.prototype)
-      .filter(
-        (prop) => typeof this[prop] === "function" && prop !== "constructor"
-      )
-      .forEach((method) => {
-        this[method] = asyncWrapper(this[method]);
-      });
+class UserController extends BaseController {
+  constructor(userService) {
+    super();
+    this.userService = userService;
   }
 
   async getFriendsList(req, res) {
     const userId = req.user.id;
-    const user = await userRepository.findFriends(userId);
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.friendsList(userId);
   }
 
   async getProfile(req, res) {

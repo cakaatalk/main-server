@@ -1,3 +1,4 @@
+const { ErrorResponse } = require("../common/dongpring/dongxeption");
 const Profile = require("../entities/profile.entity");
 const User = require("../entities/user.entity");
 
@@ -71,6 +72,7 @@ class UserRepository {
     });
   }
   findFriends(id) {
+    throw new ErrorResponse(404, "User not found");
     return new Promise((resolve, reject) => {
       this.connection.query(
         `

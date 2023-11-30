@@ -1,5 +1,22 @@
 const db = require("../../common/database");
 
+class UserService {
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  async friendsList(userId) {
+    const users = await this.userRepository.findFriends(userId);
+    if (!users) {
+      throw new ErrorResponse(404, "User not found");
+    }
+    return { data: users };
+  }
+
+  // 다른 메소드들...
+}
+module.exports = UserService;
+
 exports.findUserByEmail = (email) => {
   return new Promise((resolve, reject) => {
     const query = `SELECT * FROM USER WHERE email = ?`;
@@ -8,97 +25,6 @@ exports.findUserByEmail = (email) => {
         return reject(error);
       }
       return resolve(rows);
-    });
-  });
-};
-
-exports.getFriendsList = async (userId) => {
-  return await userRepository.findFriends(userId);
-};
-
-exports.getProfile = (userId) => {
-  const query = "SELECT * FROM PROFILE WHERE user_id = ?";
-  db.query(query, [userId], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ data: results[0] });
-  });
-};
-
-exports.addFriend = (userId, friendId) => {
-  const query = "INSERT INTO FRIENDS (user_id, friend_id) VALUES (?, ?)";
-  db.query(query, [userId, friendId], (error) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ message: "Friend added!" });
-  });
-};
-
-exports.updateProfile = (userId, imageUrl, comment) => {
-  const query =
-    "UPDATE PROFILE SET image_url = ?, comment = ? WHERE user_id = ?";
-  db.query(query, [imageUrl, comment, userId], (error) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ message: "Profile updated!" });
-  });
-};
-
-exports.searchUser = (name) => {
-  const query = "SELECT id, user_name FROM USER WHERE user_name LIKE ?";
-  db.query(query, [name], (error, results) => {
-    if (error) {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ data: results });
-  });
-};
-
-exports.addUser = (userName, email, password) => {
-  db.query(
-    "INSERT INTO USER (user_name, email, password) VALUES (?, ?, ?)",
-    [userName, email, password],
-    (err, results) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-
-      const userId = results.insertId;
-      db.query("INSERT INTO PROFILE (user_id) VALUES (?)", [userId], (err2) => {
-        if (err2) {
-          res.status(500).json({ error: err2.message });
-          return;
-        }
-        res.json({
-          message: "User and profile added successfully",
-          userId: userId,
-        });
-      });
-    }
-  );
-};
-
-exports.deleteUser = (userId) => {
-  db.query("DELETE FROM PROFILE WHERE user_id = ?", [userId], (err) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-
-    db.query("DELETE FROM USER WHERE id = ?", [userId], (err2) => {
-      if (err2) {
-        res.status(500).json({ error: err2.message });
-        return;
-      }
-      res.json({ message: "User and profile deleted successfully" });
     });
   });
 };
