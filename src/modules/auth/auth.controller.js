@@ -17,7 +17,7 @@ exports.checkUserSession = async (req, res, next) => {
 }
 
 exports.info = async (req, res) => {
-  res.send(`Welcome, ${JSON.stringify(req.user)}!`);
+    res.send(`Welcome, ${JSON.stringify(req.user)}!`);
 };
 
 exports.refreshAccessToken = async (req, res) => {

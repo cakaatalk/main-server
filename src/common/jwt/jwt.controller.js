@@ -18,7 +18,7 @@ exports.generateTokens = async (id, email, user_name) => {
 
 exports.deleteRefreshToken = async (refreshToken) => {
     try {
-        const { email, user_name } = jwt.decode(refreshToken);
+        const { email, user_name, id } = jwt.decode(refreshToken);
         await jwtService.deleteRefreshToken(email, user_name);
     } catch (error) {
         throw error;
@@ -48,12 +48,12 @@ exports.verifyAccessToken = async (accessToken) => {
 exports.verifyRefreshToken = async (refreshToken) => {
     try {
         await this.valueValidCheck(refreshToken);
-        const { email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
+        const { id, email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
         const result = await jwtService.checkRefreshToken(email, user_name);
         if (refreshToken != result[0].refresh_token) {
             throw new DuplicatedError(REFRESH_TOKEN_ERROR.DUPLICATED);
         }
-        const newTokens = await this.generateTokens(email, user_name);
+        const newTokens = await this.generateTokens(id, email, user_name);
         return {
             newAccessToken: newTokens.accessToken, newRefreshToken: newTokens.refreshToken,
             email, user_name
@@ -75,13 +75,14 @@ exports.verifyRefreshToken = async (refreshToken) => {
     }
 };
 
-const generateAccessToken = async (email, user_name) => {
+const generateAccessToken = async (id, email, user_name) => {
     return jwt.sign(
         (payload = {
             type: "JWT",
             time: Date.now(),
             email: email,
-            user_name: user_name
+            user_name: user_name,
+            id: id
         }),
         (secret = ACCESS_SECRET_KEY),
         (options = {
@@ -90,13 +91,14 @@ const generateAccessToken = async (email, user_name) => {
     );
 };
 
-const generateRefreshToken = async (email, user_name) => {
+const generateRefreshToken = async (id, email, user_name) => {
     const refreshToken = jwt.sign(
         (payload = {
             type: "JWT",
             time: Date.now(),
             email: email,
-            user_name: user_name
+            user_name: user_name,
+            id: id
         }),
         (secret = REFRESH_SECRET_KEY),
         (options = {
