@@ -7,23 +7,22 @@ const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
 
 exports.generateTokens = async (id, email, user_name) => {
-  try {
-    const accessToken = await generateAccessToken(id, email, user_name);
-    // console.log(accessToken);
-    const refreshToken = await generateRefreshToken(id, email, user_name);
-    return Promise.resolve({ accessToken, refreshToken });
-  } catch (err) {
-    return Promise.reject(err);
-  }
+    try {
+        const accessToken = await generateAccessToken(id, email, user_name);
+        const refreshToken = await generateRefreshToken(id, email, user_name);
+        return Promise.resolve({ accessToken, refreshToken });
+    } catch (err) {
+        return Promise.reject(err);
+    }
 };
 
 exports.deleteRefreshToken = async (refreshToken) => {
-  try {
-    const { email, user_name } = jwt.decode(refreshToken);
-    await jwtService.deleteRefreshToken(email, user_name);
-  } catch (error) {
-    throw error;
-  }
+    try {
+        const { email, user_name } = jwt.decode(refreshToken);
+        await jwtService.deleteRefreshToken(email, user_name);
+    } catch (error) {
+        throw error;
+    }
 };
 
 exports.verifyAccessToken = async (accessToken) => {
@@ -44,13 +43,6 @@ exports.verifyAccessToken = async (accessToken) => {
         error.message = ACCESS_TOKEN_ERROR.NOT_EXIST;
         throw error;
     }
-    if (error instanceof jwt.JsonWebTokenError) {
-      error.message = ACCESS_TOKEN_ERROR.MALFORMED;
-      throw error;
-    }
-    error.message = ACCESS_TOKEN_ERROR.NOT_EXIST;
-    throw error;
-  }
 };
 
 exports.verifyRefreshToken = async (refreshToken) => {
@@ -81,28 +73,6 @@ exports.verifyRefreshToken = async (refreshToken) => {
         error.message = REFRESH_TOKEN_ERROR.NOT_EXIST;
         throw error;
     }
-    const newTokens = await this.generateTokens(email, user_name);
-    return {
-      newAccessToken: newTokens.accessToken,
-      newRefreshToken: newTokens.refreshToken,
-      email,
-      user_name,
-    };
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      error.message = REFRESH_TOKEN_ERROR.EXPIRED;
-      throw error;
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      error.message = REFRESH_TOKEN_ERROR.MALFORMED;
-      throw error;
-    }
-    if (error instanceof DuplicatedError) {
-      throw error;
-    }
-    error.message = REFRESH_TOKEN_ERROR.NOT_EXIST;
-    throw error;
-  }
 };
 
 const generateAccessToken = async (email, user_name) => {
@@ -143,7 +113,7 @@ const generateRefreshToken = async (email, user_name) => {
 };
 
 exports.valueValidCheck = async (value) => {
-  if (!value || value == "" || value === undefined || value === "undefined") {
-    throw new Error();
-  }
+    if (!value || value == "" || value === undefined || value === "undefined") {
+        throw new Error();
+    }
 };
