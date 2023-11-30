@@ -8,7 +8,7 @@ class ErrorResponse {
     res.status(this.status).json(this.body);
   }
 }
-const dongxeption = (error, req, res, next) => {
+const dongception = (error, req, res, next) => {
   if (error instanceof ErrorResponse) {
     error.send(res);
   } else {
@@ -16,4 +16,4 @@ const dongxeption = (error, req, res, next) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-module.exports = { ErrorResponse, dongxeption };
+module.exports = { ErrorResponse, dongception };

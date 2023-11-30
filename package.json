@@ -18,6 +18,6 @@
   "author": "",
   "license": "ISC",
   "imports": {
-    "#dongxeption": "./src/common/dongpring/dongxeption.js"
+    "#dongception": "./src/common/dongpring/dongception.js"
   }
 }

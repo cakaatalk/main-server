@@ -11,51 +11,27 @@ class UserController extends BaseController {
 
   async getFriendsList(req, res) {
     const userId = req.user.id;
-    return await this.userService.friendsList(userId);
+    return await this.userService.getFriendsList(userId);
   }
 
   async getProfile(req, res) {
     const userId = req.user.id;
-
-    const user = await userRepository.findProfileById(userId);
-    console.log(user);
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.getProfile(userId);
   }
 
   async addFriend(req, res) {
     const userId = req.user.id;
     const friendId = req.body.friendId;
-
-    const user = await userRepository.addFriend(userId, friendId);
-    if (user) {
-      res.json({ message: "Friend added!" });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.addFriend(userId, friendId);
   }
 
   async findUserByEmail(req, res) {
     const email = req.query.email;
-
-    const user = await userRepository.findByEmail(email);
-    if (user) {
-      res.json({ data: result });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.findUserByEmail(email);
   }
 
   async findAllUser(req, res) {
-    const user = await userRepository.findAll();
-    if (user) {
-      res.json({ data: user });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.findAllUser();
   }
 
   async updateProfile(req, res) {
@@ -63,23 +39,13 @@ class UserController extends BaseController {
     const imageUrl = req.body.imageUrl;
     const comment = req.body.comment;
 
-    const user = await userRepository.updateProfile(userId, imageUrl, comment);
-    if (user) {
-      res.json({ message: "Profile updated!" });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.updateProfile(userId, imageUrl, comment);
   }
 
   async searchUser(req, res) {
     const nameForSearch = `%${req.query.name}%`;
 
-    const user = await userRepository.searchUserByName(nameForSearch);
-    if (user) {
-      res.json({ data: results });
-    } else {
-      res.status(404).send({ error: "User not found" });
-    }
+    return await this.userService.searchUser(nameForSearch);
   }
 
   async addUser(req, res) {
