@@ -11,7 +11,14 @@ const REFRESH_TOKEN_ERROR = {
     DUPLICATED: "이전에 발급한 RefreshToken입니다."
 };
 
+const TOKEN_ERROR = {
+    EXPIRED: "Token has expired",
+    INVALID_SIGNATURE: "Invalid token signature",
+    INVALID_FORMAT: "Invalid token format"
+}
+
 module.exports = {
     ACCESS_TOKEN_ERROR,
     REFRESH_TOKEN_ERROR,
+    TOKEN_ERROR
 };
