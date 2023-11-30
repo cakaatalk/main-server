@@ -1,4 +1,5 @@
 const jwtController = require('../../common/jwt/jwt.controller');
+const cookieParser = require('../../common/jwt/cookieparser.js');
 const userService = require('../user/user.service');
 const authRepository = require('../../repositories/auth.repository');
 const { STATUS_CODES, STATUS_MESSAGES } = require('../../common/http/responseCode');
@@ -57,7 +58,7 @@ exports.info = async (req, res) => {
 }
 
 exports.refreshAccessToken = async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = await extractFromCookie(req, 'refreshToken');
     try {
         const result = await jwtController.verifyRefreshToken(refreshToken);
         res.cookie('refreshToken', encodeURIComponent(result.newRefreshToken), { httpOnly: true });
@@ -80,10 +81,15 @@ const validUser = async (email) => {
 
 const clearTokens = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = extractFromCookie(req, 'refreshToken');
         res.clearCookie('refreshToken');
         await jwtController.deleteRefreshToken(refreshToken);
     } catch (error) {
         throw error;
     }
+}
+
+const extractFromCookie = async (req, name) => {
+    const extracted = cookieParser.parseCookies(req.headers.cookie)[name];
+    return decodeURIComponent(extracted);
 }

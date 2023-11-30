@@ -1,4 +1,4 @@
-function parseCookies(cookieString) {
+exports.parseCookies = (cookieString) => {
     const list = {};
 
     cookieString && cookieString.split(';').forEach(function (cookie) {

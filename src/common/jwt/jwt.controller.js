@@ -1,7 +1,7 @@
 const jwt = require("./dsonwebtoken.js");
 const jwtService = require("./jwt.service.js");
 const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
-const DuplicatedError = require('./error/jwt.customError.js');
+const { TokenExpiredError, DuplicatedError, JsonWebTokenError } = require('./error/jwt.customError.js');
 
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
@@ -31,12 +31,12 @@ exports.verifyAccessToken = async (accessToken) => {
         const decodedToken = jwt.verify(accessToken, ACCESS_SECRET_KEY);
         return decodedToken;
     } catch (error) {
-        if (error instanceof jwt.TokenExpiredError) {
+        if (error instanceof TokenExpiredError) {
             console.error(ACCESS_TOKEN_ERROR.EXPIRED);
             error.message = ACCESS_TOKEN_ERROR.EXPIRED;
             throw error;
         }
-        if (error instanceof jwt.JsonWebTokenError) {
+        if (error instanceof JsonWebTokenError) {
             error.message = ACCESS_TOKEN_ERROR.MALFORMED;
             throw error;
         }
@@ -59,11 +59,11 @@ exports.verifyRefreshToken = async (refreshToken) => {
             email, user_name
         };
     } catch (error) {
-        if (error instanceof jwt.TokenExpiredError) {
+        if (error instanceof TokenExpiredError) {
             error.message = REFRESH_TOKEN_ERROR.EXPIRED;
             throw error;
         }
-        if (error instanceof jwt.JsonWebTokenError) {
+        if (error instanceof JsonWebTokenError) {
             error.message = REFRESH_TOKEN_ERROR.MALFORMED;
             throw error;
         }
