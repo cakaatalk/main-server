@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --experimental-import-meta-resolve app.js"
+    "start": "node --experimental-import-meta-resolve app.js",
+    "orm:update": "node ./src/common/database/migration/migration.js            "
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",

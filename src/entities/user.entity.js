@@ -16,12 +16,6 @@ class User extends BaseEntity {
     this.email = email;
     this.password = password;
   }
-
-  static get tableName() {
-    return "USER";
-  }
-
-  // 필요한 경우 User 클래스에 특화된 메소드 추가
 }
 
 module.exports = User;
