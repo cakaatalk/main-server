@@ -39,7 +39,7 @@ class UserRepository {
       );
     });
   }
-  d;
+
   findByEmail(email) {
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -71,6 +71,7 @@ class UserRepository {
       );
     });
   }
+
   findFriends(id) {
     return new Promise((resolve, reject) => {
       this.connection.query(

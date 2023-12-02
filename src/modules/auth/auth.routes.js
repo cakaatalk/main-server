@@ -1,7 +1,14 @@
 const express = require('express');
-const app = express();
+const AuthController = require('./auth.controller');
+const AuthService = require('./auth.service');
+const AuthRepository = require('./../../repositories/auth.repository');
+const db = require("../../common/database");
+const jwtController = require('./../../common/jwt/jwt.controller');
 
-const authController = require("./auth.controller");
+const authRepository = new AuthRepository(db);
+const authService = new AuthService(authRepository, jwtController);
+const authController = new AuthController(authService);
+const app = express();
 
 const authRouter = express.Router();
 

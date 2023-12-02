@@ -6,7 +6,15 @@ const db = require("../../common/database");
 const userRepository = new UserRepository(db);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
-const authController = require("../auth/auth.controller");
+
+const AuthController = require('./../auth/auth.controller');
+const AuthService = require('./../auth/auth.service');
+const AuthRepository = require('./../../repositories/auth.repository');
+const jwtController = require('./../../common/jwt/jwt.controller');
+
+const authRepository = new AuthRepository(db);
+const authService = new AuthService(authRepository, jwtController);
+const authController = new AuthController(authService);
 
 const userRouter = express.Router();
 
