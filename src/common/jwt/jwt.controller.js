@@ -49,7 +49,7 @@ exports.verifyRefreshToken = async (refreshToken) => {
     try {
         await this.valueValidCheck(refreshToken);
         const { id, email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
-        const result = await jwtService.checkRefreshToken(email, user_name);
+        const result = await jwtService.checkRefreshToken(id, email, user_name);
         if (refreshToken != result[0].refresh_token) {
             throw new DuplicatedError(REFRESH_TOKEN_ERROR.DUPLICATED);
         }
@@ -106,8 +106,11 @@ const generateRefreshToken = async (id, email, user_name) => {
         })
     );
     try {
-        await jwtService.deleteRefreshToken(email, user_name);
-        await jwtService.insertRefreshToken(refreshToken, email, user_name);
+        const result = await jwtService.checkRefreshToken(id, email, user_name);
+        if (result != [] || refreshToken != result[0].refresh_token) {
+            await jwtService.deleteRefreshToken(id, email, user_name);
+        }
+        await jwtService.insertRefreshToken(refreshToken, id, email, user_name);
         return refreshToken;
     } catch (err) {
         throw err;

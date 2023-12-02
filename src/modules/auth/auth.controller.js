@@ -11,7 +11,8 @@ class AuthController extends BaseController {
     }
 
     async loginAndGiveToken(req, res) {
-        await this.authService.loginAndGiveToken(req, res);
+        const { email, password } = req.body;
+        await this.authService.loginAndGiveToken(email, password, res);
     }
 
     async logoutAndDestroyToken(req, res) {

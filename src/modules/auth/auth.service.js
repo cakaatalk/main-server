@@ -12,7 +12,7 @@ class AuthService {
         try {
             const { user_name, email, password } = user;
             if (!user_name || !email || !password) {
-                throw new ErrorResponse(400, "회원가입 입력값이 부족합니다");
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "회원가입 입력값이 부족합니다");
             }
 
             await this.validUser(email);
@@ -32,19 +32,17 @@ class AuthService {
     }
 
 
-    async loginAndGiveToken(req, res) {
+    async loginAndGiveToken(email, password, res) {
         try {
-            const { email, password } = req.body;
             const result = await this.authRepository.findUserByEmailAndPassword(email, password);
-            console.log(result);
             if (!result || result == '') {
-                throw new Error('로그인 실패. 이메일 또는 패스워드를 확인해주세요.');
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, '로그인 실패. 이메일 또는 패스워드를 확인해주세요.');
             }
             const { accessToken, refreshToken } = await this.jwtController.generateTokens(result[0].id, result[0].email, result[0].user_name);
             res.cookie('refreshToken', encodeURIComponent(refreshToken), { httpOnly: true });
             res.status(STATUS_CODES.OK).json({ accessToken: accessToken });
         } catch (error) {
-            res.status(STATUS_CODES.BAD_REQUEST).send({ error: error.message });
+            throw error;
         }
     }
 
