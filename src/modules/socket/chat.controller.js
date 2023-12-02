@@ -1,4 +1,15 @@
-let rooms = [];
+let rooms = [
+    {
+        roomName: "방이름",
+        users: [],
+        chat: []
+    },
+    {
+        roomName: "방이름12",
+        users: [],
+        chat: []
+    },
+];
 
 class chat {
     constructor(roomName, message, sender, timestamp) {
@@ -27,21 +38,22 @@ function initSocket(io) {
         });
 
         socket.on('createRoom', (roomName) => {
-            rooms.push({ roomName, users: [socket.id] });
+            rooms.push({ roomName, users: [socket.id], chat: [] });
             socket.join(roomName);
-            socket.emit('getRoomsChange', rooms);
+            socket.to(roomName).emit('getRoomsChange', rooms);
         });
 
         socket.on('joinRoom', (roomName) => {
             const roomIndex = rooms.findIndex(room => room.roomName === roomName);
+            console.log(roomIndex, roomName, rooms);
             rooms[roomIndex].users.push(socket.id);
             socket.join(roomName);
-            socket.emit('getRoomsChange', rooms);
+            socket.to(roomName).emit('getRoomsChange', rooms);
         });
 
         socket.on('initmsg', (roomName, callback) => {
             const roomIndex = rooms.findIndex(room => room.roomName === roomName);
-            if(rooms[roomIndex].chat) {
+            if (rooms[roomIndex].chat) {
                 callback(rooms[roomIndex].chat);
             }
         });
@@ -49,7 +61,7 @@ function initSocket(io) {
         socket.on('sendmsg', (roomName, message) => {
             console.log('Msg from ' + socket.id + ': ' + JSON.stringify(message));
 
-            if(message) {
+            if (message) {
                 const timestamp = new Date().toLocaleString();
                 let chatData = new chat(roomName, message, socket.id, timestamp);
                 const roomIndex = rooms.findIndex(room => room.roomName === roomName);

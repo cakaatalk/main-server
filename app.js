@@ -1,22 +1,29 @@
 const express = require("express");
 const http = require('http');
-const socketIo = require('socket.io');
-const {initSocket} = require('./src/modules/socket/chat.controller.js');
+const { initWebSocket } = require('./src/modules/socket/chatws.controller.js');
+const { initSocket } = require('./src/modules/socket/chat.controller');
 
 require('dotenv').config();
 const app = express();
 const port = 8080;
 const socketPort = 3001;
+const mode = 0; // 0 is socketio, 1 is websocket
 
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
 
-initSocket(io);
+if (mode == 0) {
+  const io = socketIo(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+  initSocket(io);
+}
+else {
+  const wss = new WebSocket.Server({ server });
+  initWebSocket(wss);
+}
 
 // const db = require("./db");
 
@@ -33,5 +40,5 @@ app.listen(port, () => {
 });
 
 server.listen(socketPort, () => {
-  console.log('running on port '+socketPort);
+  console.log('running on port ' + socketPort);
 });
