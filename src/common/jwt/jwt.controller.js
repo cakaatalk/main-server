@@ -19,7 +19,7 @@ exports.generateTokens = async (id, email, user_name) => {
 exports.deleteRefreshToken = async (refreshToken) => {
     try {
         const { email, user_name, id } = jwt.decode(refreshToken);
-        await jwtService.deleteRefreshToken(email, user_name);
+        await jwtService.deleteRefreshToken(id, email, user_name);
     } catch (error) {
         throw error;
     }
