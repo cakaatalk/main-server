@@ -70,7 +70,7 @@ class AuthService {
     async refreshAccessToken(req, res) {
         const refreshToken = await this.extractFromCookie(req, 'refreshToken');
         try {
-            const result = await jwtController.verifyRefreshToken(refreshToken);
+            const result = await this.jwtController.verifyRefreshToken(decodeURIComponent(refreshToken));
             res.cookie('refreshToken', encodeURIComponent(result.newRefreshToken), { httpOnly: true });
             res.status(STATUS_CODES.CREATED).json({ accessToken: result.newAccessToken });
         } catch (error) {
@@ -92,7 +92,7 @@ class AuthService {
     async clearTokens(req, res) {
         try {
             const refreshToken = await this.extractFromCookie(req, 'refreshToken');
-            // res.clearCookie('refreshToken');
+            res.clearCookie('refreshToken');
             await this.jwtController.deleteRefreshToken(refreshToken);
         } catch (error) {
             throw error;
