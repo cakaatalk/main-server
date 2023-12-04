@@ -1,3 +1,4 @@
+const WebSocket = require('ws');
 
 let rooms = [
   {
@@ -11,6 +12,8 @@ let rooms = [
     chat: []
   },
 ];
+
+let routeTable = [];
 
 class Chat {
   constructor(roomName, message, sender, timestamp) {
@@ -32,6 +35,7 @@ function initWebSocket(wss) {
 
     ws.on('close', () => {
       console.log(`Disconnected. Socket ID: ${ws._socket.remoteAddress}`);
+      
     });
   });
 }
@@ -48,15 +52,16 @@ function handleWebSocketMessage(ws, message) {
       break;
 
     case 'createRoom':
-      rooms.push({ roomName: message.data.roomName, users: [ws._socket.remoteAddress], chat: [] });
+      rooms.push({ roomName: message.data.roomName, users: [message.token], chat: [] });
       ws.join(message.data.roomName);
+      routeTable.push({roomName:message.data.roomName, token:message.token, ws:ws});
       broadcastToRoom(message.data.roomName, 'getRoomsChange', rooms);
       break;
 
     case 'joinRoom':
       const roomIndex = rooms.findIndex(room => room.roomName === message.data.roomName);
-      rooms[roomIndex].users.push(ws._socket.remoteAddress);
-      ws.join(message.data.roomName);
+      rooms[roomIndex].users.push(message.token);
+      routeTable.push({roomName:message.data.roomName, token:message.token, ws:ws});
       broadcastToRoom(message.data.roomName, 'getRoomsChange', rooms);
       break;
 
@@ -83,9 +88,9 @@ function handleWebSocketMessage(ws, message) {
 }
 
 function broadcastToRoom(roomName, type, data) {
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN && client.rooms.has(roomName)) {
-      client.send(JSON.stringify({ type, data }));
+  routeTable.forEach(client => {
+    if(client.ws.readyState === WebSocket.OPEN && client.roomName === roomName) {
+      client.ws.send(JSON.stringify({ type:type, data:data }));
     }
   });
 }

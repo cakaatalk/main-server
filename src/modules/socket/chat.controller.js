@@ -52,6 +52,7 @@ function initSocket(io) {
         });
 
         socket.on('initmsg', (roomName, callback) => {
+            console.log(roomName);
             const roomIndex = rooms.findIndex(room => room.roomName === roomName);
             if (rooms[roomIndex].chat) {
                 callback(rooms[roomIndex].chat);

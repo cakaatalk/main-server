@@ -1,5 +1,7 @@
 const express = require("express");
 const http = require('http');
+const socketIo = require('socket.io');
+const WebSocket = require('ws');
 const { initWebSocket } = require('./src/modules/socket/chatws.controller.js');
 const { initSocket } = require('./src/modules/socket/chat.controller');
 
@@ -7,7 +9,7 @@ require('dotenv').config();
 const app = express();
 const port = 8080;
 const socketPort = 3001;
-const mode = 0; // 0 is socketio, 1 is websocket
+const mode = 1; // 0 is socketio, 1 is websocket
 
 const server = http.createServer(app);
 
@@ -21,7 +23,12 @@ if (mode == 0) {
   initSocket(io);
 }
 else {
-  const wss = new WebSocket.Server({ server });
+  const wss = new WebSocket.Server({server, 
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    }, 
+  });
   initWebSocket(wss);
 }
 
