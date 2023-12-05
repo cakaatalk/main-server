@@ -4,6 +4,6 @@ CREATE TABLE MESSAGES (
     sender INT NOT NULL,
     room_id INT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender) REFERENCES users(id),
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
+    FOREIGN KEY (sender) REFERENCES USER(id),
+    FOREIGN KEY (room_id) REFERENCES ROOMS(id)
 );
