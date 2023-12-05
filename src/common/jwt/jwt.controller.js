@@ -1,3 +1,7 @@
+
+const jwt = require('jsonwebtoken')
+// const AuthToken = require('../../modules/auth/AuthToekn.js')
+const jwtService = require('./jwt.service.js')
 const jwt = require("./dsonwebtoken.js");
 const jwtService = require("./jwt.service.js");
 const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
