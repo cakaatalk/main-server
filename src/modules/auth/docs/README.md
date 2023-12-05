@@ -2,13 +2,18 @@
 
 ## 사용자의 Authentication
 
-### 처음 로그인
+### 회원가입 기능, 로그인 기능
 
+- <b> 회원가입 </b>
 - <b> 사용자의 로그인 정보가 있는지 검증 </b>
-  - 로그인 정보가 없을 시, 이메일 존재하지 않는다는 응답
-  - 로그인 정보가 있을 시, RefreshToken 생성, AccessToken 생성, RefreshToken은 DB와 HttpOnly 쿠키에 저장 AccessToken은 응답으로 전달 (프론트에서 헤더의 Authorization에 저장 필요)
+  #### 로그인 정보가 없을 시
+  이메일 존재하지 않는다는 응답
+  ##### 로그인 정보가 있을 시
+  - AccessToken 생성, RefreshToken 생성
+  - RefreshToken은 DB와 HttpOnly 쿠키에 저장 AccessToken은 응답으로 전달(프론트에서 헤더의 Authorization에 저장 필요)
+  - RefreshToken을 DB에 저장할 때, 이미 email, user_name으로 생성된 RefreshToken이 있을 경우 삭제
 
-### 이후 로그인 or 검증
+### 유저 세션 관리 기능
 
 - Access Token을 Request의 Authorization Header 에서 추출해서 검증
   - 유효할 시 정상 응답

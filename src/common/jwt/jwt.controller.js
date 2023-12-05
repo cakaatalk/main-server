@@ -1,102 +1,125 @@
+
 const jwt = require('jsonwebtoken')
 // const AuthToken = require('../../modules/auth/AuthToekn.js')
 const jwtService = require('./jwt.service.js')
+const jwt = require("./dsonwebtoken.js");
+const jwtService = require("./jwt.service.js");
+const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
+const { TokenExpiredError, DuplicatedError, JsonWebTokenError } = require('./error/jwt.customError.js');
+
 const ACCESS_SECRET_KEY = process.env.ACCESS_TOKEN_PRIVATE_KEY;
 const REFRESH_SECRET_KEY = process.env.REFRESH_TOKEN_PRIVTATE_KEY;
 
-exports.generateAccessToken = (email) => {
-    return jwt.sign(
-        payload = {
-            type: 'JWT',
-            time: Date(),
-            email: email
-        },
-        secret = ACCESS_SECRET_KEY,
-        options = {
-            expiresIn: '15m'
-        }
-    );
-}
-
-exports.generateRefreshToken = (email) => {
-    return jwt.sign(
-        payload = {
-            type: 'JWT',
-            time: Date(),
-            email: email
-        },
-        secret = REFRESH_SECRET_KEY,
-        options = {
-            expiresIn: '30d'
-        }
-    )
-}
-
-exports.generateTokens = async (user) => {
+exports.generateTokens = async (id, email, user_name) => {
     try {
-        const accessToken = this.generateAccessToken(user.email);
-        const refreshToken = this.generateRefreshToken(user.email);
-
-        // DB에서 Token 있는지 검사
-        const existRefreshToken = await jwtService.checkRefreshToken(refreshToken);
-        if (existRefreshToken) await jwtService.deleteRefreshToken(existRefreshToken);
-
+        const accessToken = await generateAccessToken(id, email, user_name);
+        const refreshToken = await generateRefreshToken(id, email, user_name);
         return Promise.resolve({ accessToken, refreshToken });
     } catch (err) {
         return Promise.reject(err);
     }
 };
 
-exports.validateToken = (accessToken, refreshToken) => {
+exports.deleteRefreshToken = async (refreshToken) => {
+    try {
+        const { email, user_name, id } = jwt.decode(refreshToken);
+        await jwtService.deleteRefreshToken(email, user_name);
+    } catch (error) {
+        throw error;
+    }
+};
 
-}
+exports.verifyAccessToken = async (accessToken) => {
+    try {
+        await this.valueValidCheck(accessToken);
+        const decodedToken = jwt.verify(accessToken, ACCESS_SECRET_KEY);
+        return decodedToken;
+    } catch (error) {
+        if (error instanceof TokenExpiredError) {
+            console.error(ACCESS_TOKEN_ERROR.EXPIRED);
+            error.message = ACCESS_TOKEN_ERROR.EXPIRED;
+            throw error;
+        }
+        if (error instanceof JsonWebTokenError) {
+            error.message = ACCESS_TOKEN_ERROR.MALFORMED;
+            throw error;
+        }
+        error.message = ACCESS_TOKEN_ERROR.NOT_EXIST;
+        throw error;
+    }
+};
 
-function verifyAccessToken(accessToken) {
-    return new Promise((resolve, reject) => {
-        try {
-            resolve(jwt.verify(accessToken, ACCESS_SECRET_KEY));
+exports.verifyRefreshToken = async (refreshToken) => {
+    try {
+        await this.valueValidCheck(refreshToken);
+        const { id, email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
+        const result = await jwtService.checkRefreshToken(email, user_name);
+        if (refreshToken != result[0].refresh_token) {
+            throw new DuplicatedError(REFRESH_TOKEN_ERROR.DUPLICATED);
         }
-        catch (error) {
-            // AccessToken이 만료되었을 경우, RefreshToken을 DB에서 조회한다.
-            if (error.name === 'TokenExpiredError') {
-                console.log('Access Token이 만료되었습니다.');
-                if (refreshToken) {
-                    // RefreshToken이 있을 경우 검증한다
-                    jwtService.verifyRefreshToken(refreshToken)
-                        // 검증이 유효할 경우 AccessToken을 재발급하고 정상 처리한다
-                        .then(() => {
-                            const newAccessToken = this.generateAccessToken(jwt.decode(accessToken).email);
-                            resolve(newAccessToken);
-                        })
-                        // 검증이 유효하지 않을 경우 RefreshToken을 삭제하고 사용자가 로그인하도록 유도한다
-                        .catch(() => {
-                            reject('RefreshToken이 유효하지 않습니다. 다시 로그인해주세요.');
-                        });
-                }
-            }
-            if (error.name === 'JsonWebTokenError') {
-                reject('유효하지 않은 Access Token입니다.');
-            }
+        const newTokens = await this.generateTokens(id, email, user_name);
+        return {
+            newAccessToken: newTokens.accessToken, newRefreshToken: newTokens.refreshToken,
+            email, user_name
+        };
+    } catch (error) {
+        if (error instanceof TokenExpiredError) {
+            error.message = REFRESH_TOKEN_ERROR.EXPIRED;
+            throw error;
         }
-    });
-}
+        if (error instanceof JsonWebTokenError) {
+            error.message = REFRESH_TOKEN_ERROR.MALFORMED;
+            throw error;
+        }
+        if (error instanceof DuplicatedError) {
+            throw error;
+        }
+        error.message = REFRESH_TOKEN_ERROR.NOT_EXIST;
+        throw error;
+    }
+};
 
-exports.verifyRefreshToken = (refreshToken) => {
-    return new Promise((resolve, reject) => {
-        try {
-            // DB에 RefreshToken이 있나 체크
-            jwtService.checkRefreshToken(refreshToken);
-            resolve(jwt.verify(refreshToken, REFRESH_SECRET_KEY));
-        }
-        catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                jwtService.deleteRefreshToken(refreshToken);
-                reject('Refresh Token이 만료되었습니다.');
-            }
-            if (error.name === 'JsonWebTokenError') {
-                jwtService.deleteRefreshToken(refreshToken);
-                reject('유효하지 않은 Refresh Token입니다.');
-            }
-        }
-    });
+const generateAccessToken = async (id, email, user_name) => {
+    return jwt.sign(
+        (payload = {
+            type: "JWT",
+            time: Date.now(),
+            email: email,
+            user_name: user_name,
+            id: id
+        }),
+        (secret = ACCESS_SECRET_KEY),
+        (options = {
+            expiresIn: 60 * 60, // 1h
+        })
+    );
+};
+
+const generateRefreshToken = async (id, email, user_name) => {
+    const refreshToken = jwt.sign(
+        (payload = {
+            type: "JWT",
+            time: Date.now(),
+            email: email,
+            user_name: user_name,
+            id: id
+        }),
+        (secret = REFRESH_SECRET_KEY),
+        (options = {
+            expiresIn: 60 * 60 * 24, // 1day
+        })
+    );
+    try {
+        await jwtService.deleteRefreshToken(email, user_name);
+        await jwtService.insertRefreshToken(refreshToken, email, user_name);
+        return refreshToken;
+    } catch (err) {
+        throw err;
+    }
+};
+
+exports.valueValidCheck = async (value) => {
+    if (!value || value == "" || value === undefined || value === "undefined") {
+        throw new Error();
+    }
 };

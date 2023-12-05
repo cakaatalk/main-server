@@ -1,4 +1,4 @@
-const connection = require("./path-to-your-connection-module");
+const connection = require("../index");
 
 class BaseEntity {
   constructor(attributes) {
@@ -63,3 +63,4 @@ class BaseEntity {
     }
   }
 }
+module.exports = BaseEntity;

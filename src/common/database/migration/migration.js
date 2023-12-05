@@ -3,10 +3,10 @@ const mysql = require("mysql2");
 // Set up MySQL connection
 const connection = mysql.createConnection({
   host: "127.0.0.1",
-  port: 4040,
+  port: 3306,
   user: "root",
   password: "1234",
-  database: "cakaotalk",
+  database: "cakaatalk",
 });
 
 // Connect to the MySQL server
@@ -20,12 +20,11 @@ connection.connect((err) => {
 
   // Replace "YOUR_QUERY_HERE" with your actual query
   connection.query(
-    `CREATE TABLE PROFILE (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    image_url VARCHAR(255),  -- S3 URL 또는 로컬 파일 경로
-    comment VARCHAR(45),
-    FOREIGN KEY (user_id) REFERENCES USER(id)
+    `CREATE TABLE AUTH (
+    auth_id INT PRIMARY KEY AUTO_INCREMENT,
+    refresh_token TEXT,
+    user_name VARCHAR(45) NOT NULL,
+    email VARCHAR(45) NOT NULL
 );`,
     (queryErr, results, fields) => {
       if (queryErr) {
