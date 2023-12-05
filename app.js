@@ -1,4 +1,5 @@
 const express = require("express");
+
 const http = require('http');
 const socketIo = require('socket.io');
 const WebSocket = require('ws');
@@ -23,13 +24,18 @@ if (mode == 0) {
   initSocket(io);
 }
 else {
-  const wss = new WebSocket.Server({server, 
+  const wss = new WebSocket.Server({
+    server,
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
-    }, 
+    },
   });
   initWebSocket(wss);
+}
+
+let corsOptions = {
+  origin: '*'
 }
 
 const routes = require("./src/route");
@@ -37,6 +43,14 @@ const { dongception } = require("#dongception");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
+  next();
+});
 app.use("/api", routes);
 
 app.use(dongception);

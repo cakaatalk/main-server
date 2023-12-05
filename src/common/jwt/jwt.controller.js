@@ -1,7 +1,3 @@
-
-const jwt = require('jsonwebtoken')
-// const AuthToken = require('../../modules/auth/AuthToekn.js')
-const jwtService = require('./jwt.service.js')
 const jwt = require("./dsonwebtoken.js");
 const jwtService = require("./jwt.service.js");
 const { ACCESS_TOKEN_ERROR, REFRESH_TOKEN_ERROR } = require("./error/jwt.errormessgae.js");
@@ -23,7 +19,7 @@ exports.generateTokens = async (id, email, user_name) => {
 exports.deleteRefreshToken = async (refreshToken) => {
     try {
         const { email, user_name, id } = jwt.decode(refreshToken);
-        await jwtService.deleteRefreshToken(email, user_name);
+        await jwtService.deleteRefreshToken(id, email, user_name);
     } catch (error) {
         throw error;
     }
@@ -53,7 +49,7 @@ exports.verifyRefreshToken = async (refreshToken) => {
     try {
         await this.valueValidCheck(refreshToken);
         const { id, email, user_name } = jwt.verify(refreshToken, REFRESH_SECRET_KEY);
-        const result = await jwtService.checkRefreshToken(email, user_name);
+        const result = await jwtService.checkRefreshToken(id, email, user_name);
         if (refreshToken != result[0].refresh_token) {
             throw new DuplicatedError(REFRESH_TOKEN_ERROR.DUPLICATED);
         }
@@ -110,8 +106,11 @@ const generateRefreshToken = async (id, email, user_name) => {
         })
     );
     try {
-        await jwtService.deleteRefreshToken(email, user_name);
-        await jwtService.insertRefreshToken(refreshToken, email, user_name);
+        const result = await jwtService.checkRefreshToken(id, email, user_name);
+        if (result != [] || refreshToken != result[0].refresh_token) {
+            await jwtService.deleteRefreshToken(id, email, user_name);
+        }
+        await jwtService.insertRefreshToken(refreshToken, id, email, user_name);
         return refreshToken;
     } catch (err) {
         throw err;

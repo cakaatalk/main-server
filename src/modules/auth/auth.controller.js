@@ -1,25 +1,35 @@
-const authService = require('../auth/auth.service.js');
+const BaseController = require('../../common/dongpring/baseController.js');
+class AuthController extends BaseController {
+    constructor(authService) {
+        super();
+        this.authService = authService;
+    }
 
-exports.signUpAndGiveToken = async (req, res) => {
-    await authService.signUpAndGiveToken(req, res);
+    async signUpAndGiveToken(req, res) {
+        const user = req.body;
+        return await this.authService.signUpAndGiveToken(user, res);
+    }
+
+    async loginAndGiveToken(req, res) {
+        const { email, password } = req.body;
+        await this.authService.loginAndGiveToken(email, password, res);
+    }
+
+    async logoutAndDestroyToken(req, res) {
+        await this.authService.logoutAndDestroyToken(req, res);
+    }
+
+    async checkUserSession(req, res, next) {
+        await this.authService.checkUserSession(req, res, next);
+    }
+
+    async info(req, res) {
+        res.send(`Welcome, ${JSON.stringify(req.user)}!`);
+    };
+
+    async refreshAccessToken(req, res) {
+        await this.authService.refreshAccessToken(req, res);
+    }
 }
 
-exports.loginAndGiveToken = async (req, res) => {
-    await authService.loginAndGiveToken(req, res);
-}
-
-exports.logoutAndDestroyToken = async (req, res) => {
-    await authService.logoutAndDestroyToken(req, res);
-}
-
-exports.checkUserSession = async (req, res, next) => {
-    await authService.checkUserSession(req, res, next);
-}
-
-exports.info = async (req, res) => {
-    res.send(`Welcome, ${JSON.stringify(req.user)}!`);
-};
-
-exports.refreshAccessToken = async (req, res) => {
-    await authService.refreshAccessToken(req, res);
-}
+module.exports = AuthController;

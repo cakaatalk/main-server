@@ -1,13 +1,15 @@
-exports.parseCookies = (cookieString) => {
+exports.parseCookies = (cookieHeader) => {
 
-    console.log(cookieString);
-    const list = {};
+    const cookies = {};
 
-    cookieString && cookieString.split(';').forEach(function (cookie) {
-        console.log(cookie);
-        const parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
-    });
+    if (cookieHeader) {
+        cookieHeader.split(';').forEach(cookie => {
+            const parts = cookie.split('=');
+            const name = parts[0].trim();
+            const value = parts[1];
+            cookies[name] = value;
+        });
+    }
 
-    return list;
+    return cookies;
 }
