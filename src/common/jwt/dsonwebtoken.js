@@ -16,26 +16,23 @@ function base64(data) {
 
 const dsonwebtoken = {
     sign: (payload, secret, options) => {
-        // 헤더
         const header = {
             alg: "HS256",
             typ: "JWT",
         }
         const encodedHeader = base64(JSON.stringify(header));
 
-        // 페이로드
         const finalPayload = {
             ...payload,
-            time: payload.time || Date.now(), // 현재 시간을 밀리초로 설정
+            time: payload.time || Date.now(),
         }
 
         if (options.expiresIn) {
-            finalPayload.exp = Date.now() + options.expiresIn * 1000; // 만료 시간을 밀리초로 설정
+            finalPayload.exp = Date.now() + options.expiresIn * 1000;
         }
 
         const encodedPayload = base64(JSON.stringify(finalPayload));
 
-        // 서명
         const signature = crypto
             .createHmac("sha256", secret)
             .update(`${encodedHeader}.${encodedPayload}`)
@@ -90,29 +87,5 @@ const dsonwebtoken = {
         return payload;
     }
 }
-
-// Example usage:
-// const token = dsonwebtoken.sign(
-//     (payload = {
-//         type: "JWT",
-//         time: Date.now(),
-//         email: "ilovekdh1208@ajou.ac.kr",
-//         user_name: "donghyun"
-//     }),
-//     (secret = SECRET),
-//     (options = {
-//         expiresIn: -1,
-//     })
-// );
-
-// try {
-//     console.log("토큰 발행: " + token);
-//     console.log(dsonwebtoken.verify(token, SECRET));
-//     console.log(dsonwebtoken.verify(token, "secret"));
-//     console.log(dsonwebtoken.decode(token));
-// } catch (e) {
-//     console.log(e.name);
-//     console.error(e.message);
-// }
 
 module.exports = dsonwebtoken;
