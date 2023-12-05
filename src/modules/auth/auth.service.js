@@ -31,7 +31,6 @@ class AuthService {
         }
     }
 
-
     async loginAndGiveToken(email, password, res) {
         try {
             const result = await this.authRepository.findUserByEmailAndPassword(email, password);
@@ -103,9 +102,6 @@ class AuthService {
         const extracted = cookieParser.parseCookies(req.headers.cookie)[name];
         return decodeURIComponent(extracted);
     }
-  } catch (error) {
-    throw error;
-  }
 };
 
 module.exports = AuthService;
