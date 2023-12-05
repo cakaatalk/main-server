@@ -1,8 +1,38 @@
 const express = require("express");
-const cors = require('cors');
+
+const http = require('http');
+const socketIo = require('socket.io');
+const WebSocket = require('ws');
+const { initWebSocket } = require('./src/modules/socket/chatws.controller.js');
+const { initSocket } = require('./src/modules/socket/chat.controller');
+
 require('dotenv').config();
 const app = express();
 const port = 8080;
+const socketPort = 3001;
+const mode = 1; // 0 is socketio, 1 is websocket
+
+const server = http.createServer(app);
+
+if (mode == 0) {
+  const io = socketIo(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+  initSocket(io);
+}
+else {
+  const wss = new WebSocket.Server({
+    server,
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+  initWebSocket(wss);
+}
 
 let corsOptions = {
   origin: '*'
@@ -14,7 +44,7 @@ const { dongception } = require("#dongception");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // 모든 도메인에서의 요청을 허용
+  res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
@@ -27,4 +57,8 @@ app.use(dongception);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+server.listen(socketPort, () => {
+  console.log('running on port ' + socketPort);
 });
