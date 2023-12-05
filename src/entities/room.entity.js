@@ -1,5 +1,5 @@
 const BaseEntity = require("../common/database/entity/baseEntity");
-class Profile extends BaseEntity {
+class Room extends BaseEntity {
   constructor({
     id = null,
     user_id = null,
@@ -7,10 +7,7 @@ class Profile extends BaseEntity {
     comment = "",
   } = {}) {
     super({ id, user_id, image_url, comment });
-    this.id = id;
-    this.user_id = user_id;
-    this.image_url = image_url;
-    this.comment = comment;
+    this.
   }
 }
 

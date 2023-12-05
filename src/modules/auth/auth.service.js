@@ -103,6 +103,9 @@ class AuthService {
         const extracted = cookieParser.parseCookies(req.headers.cookie)[name];
         return decodeURIComponent(extracted);
     }
-}
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = AuthService;
