@@ -1,4 +1,6 @@
 const cookieParser = require('../../common/jwt/cookieparser.js');
+const crypto = require('crypto');
+const dotenv = require('dotenv');
 const { ErrorResponse } = require("#dongception");
 const { STATUS_CODES, STATUS_MESSAGES } = require('../../common/http/responseCode');
 
@@ -17,7 +19,8 @@ class AuthService {
 
             await this.validUser(email);
 
-            const insertResult = await this.authRepository.addUser(user_name, email, password);
+            const encryptedPassword = await this.encodePassword(password);
+            const insertResult = await this.authRepository.addUser(user_name, email, encryptedPassword);
 
             const { accessToken, refreshToken } = await this.jwtController.generateTokens(insertResult.insertId, email, user_name);
             if (!accessToken || !refreshToken) {
@@ -34,7 +37,8 @@ class AuthService {
 
     async loginAndGiveToken(email, password, res) {
         try {
-            const result = await this.authRepository.findUserByEmailAndPassword(email, password);
+            const encryptedPassword = await this.encodePassword(password);
+            const result = await this.authRepository.findUserByEmailAndPassword(email, encryptedPassword);
             if (!result || result == '') {
                 throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, '로그인 실패. 이메일 또는 패스워드를 확인해주세요.');
             }
@@ -103,6 +107,26 @@ class AuthService {
         const extracted = cookieParser.parseCookies(req.headers.cookie)[name];
         return decodeURIComponent(extracted);
     }
+<<<<<<< Updated upstream
 }
+=======
+
+    async encodePassword(password) {
+        const key = process.env.ENCRYPTION_KEY;
+        const cipher = crypto.createCipher('aes-256-ctr', key);
+        let encryptedPassword = cipher.update(password, 'utf8', 'hex');
+        encryptedPassword += cipher.final('hex');
+        return encryptedPassword;
+    }
+
+    async verifyPassword(password, encryptedPassword) {
+        const key = process.env.ENCRYPTION_KEY;
+        const decipher = crypto.createDecipher('aes-256-ctr', key);
+        let decryptedPassword = decipher.update(encryptedPassword, 'hex', 'utf8');
+        decryptedPassword += decipher.final('utf8');
+        return decryptedPassword === password;
+    }
+};
+>>>>>>> Stashed changes
 
 module.exports = AuthService;
