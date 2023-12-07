@@ -47,18 +47,11 @@ class UserService {
   }
 
   async updateProfile(userId, imageUrl, comment) {
-    const user = await this.userRepository.updateProfile(
-      userId,
-      imageUrl,
-      comment
-    );
-    if (!user) {
-      throw new ErrorResponse(404, "User not found");
-    }
+    await this.userRepository.updateProfile(userId, imageUrl, comment);
     return { message: "Profile updated!" };
   }
 
-  async searchUse(nameForSearch) {
+  async searchUser(nameForSearch) {
     const user = await this.userRepository.searchUserByName(nameForSearch);
     if (!user) {
       throw new ErrorResponse(404, "User not found");
