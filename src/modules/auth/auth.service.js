@@ -107,13 +107,10 @@ class AuthService {
         const extracted = cookieParser.parseCookies(req.headers.cookie)[name];
         return decodeURIComponent(extracted);
     }
-<<<<<<< Updated upstream
-}
-=======
 
     async encodePassword(password) {
         const key = process.env.ENCRYPTION_KEY;
-        const cipher = crypto.createCipher('aes-256-ctr', key);
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, Buffer.alloc(16, 0));
         let encryptedPassword = cipher.update(password, 'utf8', 'hex');
         encryptedPassword += cipher.final('hex');
         return encryptedPassword;
@@ -121,12 +118,11 @@ class AuthService {
 
     async verifyPassword(password, encryptedPassword) {
         const key = process.env.ENCRYPTION_KEY;
-        const decipher = crypto.createDecipher('aes-256-ctr', key);
+        const decipher = crypto.createDecipheriv('aes-256-cbc', key, Buffer.alloc(16, 0));
         let decryptedPassword = decipher.update(encryptedPassword, 'hex', 'utf8');
         decryptedPassword += decipher.final('utf8');
         return decryptedPassword === password;
     }
 };
->>>>>>> Stashed changes
 
 module.exports = AuthService;
