@@ -120,7 +120,7 @@ class UserRepository {
           if (error) {
             reject(error);
           } else {
-            resolve(results.map((user) => new User(user)));
+            resolve(results);
           }
         }
       );
