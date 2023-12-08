@@ -56,16 +56,16 @@ function handleWebSocketMessage(ws, message) {
         let chatData = new Chat(
           message.data.roomId,
           message.data.message,
-          ws._socket.remoteAddress,
+          message.data.userName,
           timestamp
         );
         roomRepository.saveMessage(
-          message.data.userName,
+          chatData.sender,
           chatData.roomId,
           chatData.message,
-          timestamp
+          chatData.timestamp
         );
-        broadcastToRoom(chatData.roomId, "getmsg", chatData.message);
+        broadcastToRoom(chatData.roomId, "getmsg", chatData);
       }
       break;
 
@@ -75,6 +75,7 @@ function handleWebSocketMessage(ws, message) {
 }
 
 function broadcastToRoom(roomId, type, data) {
+  console.log(data)
   rooms[roomId].users.forEach((user) => {
     if (user.readyState === WebSocket.OPEN) {
       user.send(JSON.stringify({ type: type, data: data }));
