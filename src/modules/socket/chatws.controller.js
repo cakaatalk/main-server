@@ -1,4 +1,7 @@
 const WebSocket = require("ws");
+const RoomRepository = require("../../repositories/room.repository");
+const db = require("../../common/database");
+const roomRepository = new RoomRepository(db);
 
 let rooms = [];
 
@@ -95,6 +98,7 @@ function handleWebSocketMessage(ws, message) {
         rooms[sendMsgRoomIndex].chat = !rooms[sendMsgRoomIndex].chat
           ? [chatData]
           : [chatData, ...rooms[sendMsgRoomIndex].chat];
+        roomRepository.saveMessage(userId, roomId, content, timestamp);
         broadcastToRoom(
           message.data.roomName,
           "getmsg",
