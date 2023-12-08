@@ -1,12 +1,12 @@
 const express = require("express");
 
-const http = require('http');
-const socketIo = require('socket.io');
-const WebSocket = require('ws');
-const { initWebSocket } = require('./src/modules/socket/chatws.controller.js');
-const { initSocket } = require('./src/modules/socket/chat.controller');
+const http = require("http");
+const socketIo = require("socket.io");
+const WebSocket = require("ws");
+const { initWebSocket } = require("./src/modules/socket/chatws.controller.js");
+const { initSocket } = require("./src/modules/socket/chat.controller");
 
-require('dotenv').config();
+require("dotenv").config();
 const app = express();
 const port = 8080;
 const socketPort = 3001;
@@ -22,8 +22,7 @@ if (mode == 0) {
     },
   });
   initSocket(io);
-}
-else {
+} else {
   const wss = new WebSocket.Server({
     server,
     cors: {
@@ -34,21 +33,19 @@ else {
   initWebSocket(wss);
 }
 
-let corsOptions = {
-  origin: '*'
-}
-
 const routes = require("./src/route");
 const { dongception } = require("#dongception");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header("Access-Control-Allow-Origin", "*");
   res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
+  res.header("Access-Control-Allow-Methods", "GET, POST");
+
   next();
 });
 app.use("/api", routes);
@@ -60,5 +57,5 @@ app.listen(port, () => {
 });
 
 server.listen(socketPort, () => {
-  console.log('running on port ' + socketPort);
+  console.log("running on port " + socketPort);
 });
