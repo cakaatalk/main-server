@@ -12,6 +12,7 @@ class ChatService {
     if (!roomId) {
       roomId = await this.roomRepository.addPersonalRoom(user1Id, user2Id, "");
     }
+    console.log(roomId);
     return roomId;
   }
 

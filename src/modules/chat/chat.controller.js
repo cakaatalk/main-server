@@ -11,7 +11,6 @@ class ChatController extends BaseController {
   async getPersonalRoomId(req, res) {
     const user1Id = req.user.id;
     const user2Id = req.params.userId;
-
     return await this.chatService.getPersonalRoomId(user1Id, user2Id);
   }
 

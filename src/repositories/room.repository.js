@@ -4,6 +4,11 @@ class RoomRepository {
   }
 
   addPersonalRoom(user1Id, user2Id, roomName = "") {
+    if (Number(user1Id) > Number(user2Id)) {
+      let temp = user1Id;
+      user1Id = user2Id;
+      user2Id = temp;
+    }
     return new Promise((resolve, reject) => {
       this.connection.query(
         "INSERT INTO ROOMS (room_name) VALUES (?)",
@@ -23,6 +28,11 @@ class RoomRepository {
   }
 
   addUsersInPersonalRoom(user1Id, user2Id, roomId) {
+    if (Number(user1Id) > Number(user2Id)) {
+      let temp = user1Id;
+      user1Id = user2Id;
+      user2Id = temp;
+    }
     return new Promise((resolve, reject) => {
       this.connection.query(
         "INSERT INTO USERS_IN_PERSONALCHAT (user1_id,user2_id,room_id) VALUES (?,?,?)",
@@ -39,6 +49,11 @@ class RoomRepository {
   }
 
   getPersonalRoomId(user1Id, user2Id) {
+    if (Number(user1Id) > Number(user2Id)) {
+      let temp = user1Id;
+      user1Id = user2Id;
+      user2Id = temp;
+    }
     return new Promise((resolve, reject) => {
       this.connection.query(
         "SELECT room_id FROM USERS_IN_PERSONALCHAT WHERE user1_id = ? and user2_id= ? ",
@@ -92,7 +107,7 @@ class RoomRepository {
   saveMessage(userId, roomId, content, timestamp) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "INSERT INTO messages (content, sender, room_id, timestamp) VALUES (?, ?, ?, ?)",
+        "INSERT INTO MESSAGES (content, sender, room_id, timestamp) VALUES (?, ?, ?, ?)",
         [content, userId, roomId, timestamp],
         (error, results) => {
           if (error) {

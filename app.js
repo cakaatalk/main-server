@@ -4,7 +4,6 @@ const http = require("http");
 const socketIo = require("socket.io");
 const WebSocket = require("ws");
 const { initWebSocket } = require("./src/modules/socket/chatws.controller.js");
-const { initSocket } = require("./src/modules/socket/chat.controller");
 
 require("dotenv").config();
 const app = express();
@@ -34,7 +33,7 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
-  res.header("Access-Control-Allow-Methods", "GET, POST");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
   next();
 });
