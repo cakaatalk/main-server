@@ -17,6 +17,11 @@ class AuthService {
                 throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "회원가입 입력값이 부족합니다");
             }
 
+            const emailPattern = /@ajou\.ac\.kr$/;
+            if (!email || !emailPattern.test(email)) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다");
+            }
+
             await this.validUser(email);
 
             const encryptedPassword = await this.encodePassword(password);
