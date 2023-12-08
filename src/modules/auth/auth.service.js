@@ -1,4 +1,5 @@
 const cookieParser = require('../../common/jwt/cookieparser.js');
+const emailService = require('../auth/auth.email.js');
 const crypto = require('crypto');
 const dotenv = require('dotenv');
 const { ErrorResponse } = require("#dongception");
@@ -10,20 +11,73 @@ class AuthService {
         this.jwtController = jwtController;
     }
 
+    async sendAuthMail(email, res) {
+        try {
+            await this.validUser(email);
+            await this.authRepository.deleteAuthCode(email);
+            const authCode = await emailService.sendAuthMail(email);
+            await this.authRepository.addAuthCode(email, authCode);
+            res.status(STATUS_CODES.OK).json({ message: "Successfuly Send Email" });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async verifyMail(email, authCode, res) {
+        try {
+            if (!authCode) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "인증번호 입력값이 없습니다.");
+            }
+            if (!email) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 입력값이 없습니다.");
+            }
+            const dbAuthCode = await this.authRepository.getAuthCode(email);
+            if (dbAuthCode.length == 0) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "인증번호를 먼저 전송해주세요.");
+            }
+            if (authCode === dbAuthCode[0].auth_code) {
+                await this.authRepository.setVerity(email);
+                res.status(STATUS_CODES.OK).json({ message: "Successfuly Verified Email" });
+            } else {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "인증번호가 일치하지 않습니다.");
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findPassword(email, res) {
+        try {
+            await this.validUser(email);
+            const authCode = await emailService.sendFindMail(email);
+            await this.authRepository.addAuthCode(email, authCode);
+            res.status(STATUS_CODES.OK).json({ message: "Successfuly Send Email" });
+        } catch (error) {
+            res.status(STATUS_CODES.BAD_REQUEST).send({ message: error.message });
+        }
+    }
+
     async signUpAndGiveToken(user, res) {
         try {
             const { user_name, email, password } = user;
             if (!user_name || !email || !password) {
-                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "회원가입 입력값이 부족합니다");
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "회원가입 입력값이 부족합니다.");
             }
 
             const emailPattern = /@ajou\.ac\.kr$/;
             if (!email || !emailPattern.test(email)) {
-                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다");
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다.");
             }
 
             await this.validUser(email);
 
+            const result = await this.authRepository.getVerity(email);
+            if (!result || result.length == 0) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 인증을 해주세요.");
+            }
+            if (!result[0].verified) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 인증번호를 통해 인증해주세요.");
+            }
             const encryptedPassword = await this.encodePassword(password);
             const insertResult = await this.authRepository.addUser(user_name, email, encryptedPassword);
 
@@ -32,6 +86,7 @@ class AuthService {
                 throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, { error: "토큰 생성에 실패했습니다" });
             }
 
+            await this.authRepository.deleteAuthCode(email);
             res.cookie('refreshToken', refreshToken, { httpOnly: true });
             res.status(STATUS_CODES.CREATED).json({ accessToken });
         } catch (error) {
@@ -91,7 +146,7 @@ class AuthService {
         try {
             const result = await this.authRepository.findUserByEmail(email);
             if (result && result.length > 0) {
-                throw new ErrorResponse(400, "이미 가입한 이메일입니다.");
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이미 가입한 이메일입니다.");
             }
         } catch (error) {
             throw error;

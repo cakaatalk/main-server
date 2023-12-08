@@ -1,0 +1,6 @@
+ CREATE TABLE IF NOT EXISTS authemail (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    auth_code VARCHAR(6) NOT NULL,
+    verified BOOLEAN DEFAULT FALSE
+  )

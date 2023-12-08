@@ -41,6 +41,66 @@ class AuthRepository {
                 });
         })
     }
+
+    addAuthCode(email, authCode) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`INSERT INTO AUTHEMAIL (email, auth_code) VALUES(?, ?)`,
+                [email, authCode], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
+
+    getAuthCode(email) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`SELECT auth_code FROM AUTHEMAIL WHERE email = ?`,
+                [email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
+
+    getVerity(email) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`SELECT verified FROM AUTHEMAIL WHERE email = ?`,
+                [email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
+
+    setVerity(email) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`UPDATE AUTHEMAIL SET verified = true WHERE email = ?`,
+                [email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
+
+    deleteAuthCode(email) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`DELETE FROM AUTHEMAIL WHERE email = ?`,
+                [email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
 }
 
 module.exports = AuthRepository;
