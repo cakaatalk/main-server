@@ -42,6 +42,18 @@ class AuthRepository {
         })
     }
 
+    updateUserPassword(email, password) {
+        return new Promise((resolve, reject) => {
+            this.db.query(`UPDATE USER SET password = ? WHERE email = ?`,
+                [password, email], (error, results) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(results);
+                });
+        })
+    }
+
     addAuthCode(email, authCode) {
         return new Promise((resolve, reject) => {
             this.db.query(`INSERT INTO AUTHEMAIL (email, auth_code) VALUES(?, ?)`,

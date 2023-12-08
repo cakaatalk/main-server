@@ -23,6 +23,18 @@ class AuthService {
         }
     }
 
+    async sendPasswordMail(email, res) {
+        try {
+            await this.existUser(email);
+            await this.authRepository.deleteAuthCode(email);
+            const authCode = await emailService.sendFindMail(email);
+            await this.authRepository.addAuthCode(email, authCode);
+            res.status(STATUS_CODES.OK).json({ message: "Successfuly Send Email" });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async verifyMail(email, authCode, res) {
         try {
             if (!authCode) {
@@ -46,14 +58,23 @@ class AuthService {
         }
     }
 
-    async findPassword(email, res) {
+    async updatePassword(email, password, res) {
         try {
-            await this.validUser(email);
-            const authCode = await emailService.sendFindMail(email);
-            await this.authRepository.addAuthCode(email, authCode);
-            res.status(STATUS_CODES.OK).json({ message: "Successfuly Send Email" });
+            const result = await this.authRepository.getVerity(email);
+            if (!result || result.length == 0) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 인증을 해주세요.");
+            }
+            if (!result[0].verified) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 인증번호를 통해 인증해주세요.");
+            }
+
+            const encryptedPassword = await this.encodePassword(password);
+            const updateResult = await this.authRepository.updateUserPassword(email, encryptedPassword);
+
+            await this.authRepository.deleteAuthCode(email);
+            res.status(STATUS_CODES.OK).json({ message: '비밀번호 변경 완료' });
         } catch (error) {
-            res.status(STATUS_CODES.BAD_REQUEST).send({ message: error.message });
+            throw error;
         }
     }
 
@@ -147,6 +168,17 @@ class AuthService {
             const result = await this.authRepository.findUserByEmail(email);
             if (result && result.length > 0) {
                 throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이미 가입한 이메일입니다.");
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async existUser(email) {
+        try {
+            const result = await this.authRepository.findUserByEmail(email);
+            if (!result || result.length == 0) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "가입한 이메일이 아닙니다.");
             }
         } catch (error) {
             throw error;

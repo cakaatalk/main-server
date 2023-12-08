@@ -31,14 +31,19 @@ class AuthController extends BaseController {
         await this.authService.refreshAccessToken(req, res);
     }
 
-    async findPassword(req, res) {
-        const { email } = req.body;
-        await this.authService.findPassword(email, res);
+    async updatePassword(req, res) {
+        const { email, password } = req.body;
+        await this.authService.updatePassword(email, password, res);
     }
 
     async sendAuthMail(req, res) {
         const { email } = req.body;
         await this.authService.sendAuthMail(email, res);
+    }
+
+    async sendPasswordMail(req, res) {
+        const { email } = req.body;
+        await this.authService.sendPasswordMail(email, res);
     }
 
     async verifyMail(req, res) {
