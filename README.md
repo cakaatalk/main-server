@@ -30,3 +30,9 @@ app.js
 ```
 docker run --name mysql-cakaatalk -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABASE=cakaatalk -e MYSQL_ROOT_HOST=% -p 4040:3306 -d mysql
 ```
+
+## DB migration
+
+```
+npm run orm:update
+```

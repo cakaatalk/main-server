@@ -4,17 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --experimental-import-meta-resolve app.js"
+    "start": "node --experimental-import-meta-resolve app.js",
+    "orm:update": "node ./src/common/database/migration/migration.js            "
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.17.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.2.0",
     "mongoose": "^8.0.0",
-    "mysql2": "^3.6.1"
+    "mysql2": "^3.6.1",
+    "socket.io": "^4.7.2"
   },
   "author": "",
   "license": "ISC",

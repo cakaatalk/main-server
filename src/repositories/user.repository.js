@@ -39,7 +39,7 @@ class UserRepository {
       );
     });
   }
-  d;
+
   findByEmail(email) {
     return new Promise((resolve, reject) => {
       this.connection.query(
@@ -71,11 +71,13 @@ class UserRepository {
       );
     });
   }
+
   findFriends(id) {
     return new Promise((resolve, reject) => {
       this.connection.query(
         `
         SELECT 
+            u.id,
             u.user_name AS name, 
             u.email, 
             p.comment, 
@@ -101,13 +103,27 @@ class UserRepository {
 
   findAll() {
     return new Promise((resolve, reject) => {
-      this.connection.query("SELECT * FROM USER;", [], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results.map((user) => new User(user)));
+      this.connection.query(
+        `
+        SELECT 
+          u.id,
+          u.user_name AS name, 
+          u.email, 
+          p.comment, 
+          p.image_url AS imageURL
+        FROM 
+          USER u
+          LEFT JOIN PROFILE p ON u.id = p.user_id;
+            `,
+        [],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
         }
-      });
+      );
     });
   }
 
