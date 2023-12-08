@@ -1,4 +1,4 @@
-CREATE TABLE user_in_room (
+CREATE TABLE USERS_IN_GROUPCHAT (
     room_id INT,
     user_id INT,
     PRIMARY KEY (room_id, user_id),
