@@ -115,15 +115,19 @@ class ChatService {
     if (!startId) {
       const allMessages = await this.roomRepository.getAllMessage(roomId);
       response.messages = allMessages.slice(0, 20);
-      console.log(response.messages);
-      response.nextId = response.messages[19].id;
+      if (!response.messages.length) {
+        return [];
+      }
+      response.nextId = response.messages[response.messages.length - 1].id;
       return response;
     }
     response.messages = await this.roomRepository.getMessageByPaging(
       roomId,
       startId
     );
-    console.log(response.messages);
+    if (!response.messages.length) {
+      return [];
+    }
     response.nextId = response.messages[response.messages.length - 1].id;
     return response;
   }
