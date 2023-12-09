@@ -1,43 +1,48 @@
-const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
-const crypto = require('crypto');
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const { ErrorResponse } = require("#dongception");
 
-const gmail_email = process.env.GMAIL_SENDER;
-const gmail_password = process.env.GMAIL_PASSWORD;
+let gmail_email = process.env.GMAIL_SENDER;
+let gmail_password = process.env.GMAIL_PASSWORD;
 const CODE_LEN = 6;
 
 function generateRandomString(length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
 
-    for (let i = 0; i < length; i++) {
-        const randomIndex = crypto.randomInt(characters.length);
-        result += characters.charAt(randomIndex);
-    }
+  for (let i = 0; i < length; i++) {
+    const randomIndex = crypto.randomInt(characters.length);
+    result += characters.charAt(randomIndex);
+  }
 
-    return result;
+  return result;
 }
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'stmp.gmail.com',
-    port: '587',
-    auth: {
-        user: gmail_email,
-        pass: gmail_password
-    }
-});
+let transporter;
 
 exports.sendAuthMail = async (toEmail) => {
-    return new Promise((resolve, reject) => {
-        const authCode = generateRandomString(CODE_LEN);
+  gmail_email = process.env.GMAIL_SENDER;
+  gmail_password = process.env.GMAIL_PASSWORD;
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "stmp.gmail.com",
+    port: "587",
+    auth: {
+      user: gmail_email,
+      pass: gmail_password,
+    },
+  });
 
-        const mailOptions = {
-            from: gmail_email,
-            to: toEmail,
-            subject: '[no-reply] Cakaatalk 회원가입 인증 코드 안내',
-            html: `<div style="margin:100px;">
+  console.log(gmail_email, gmail_password);
+  return new Promise((resolve, reject) => {
+    const authCode = generateRandomString(CODE_LEN);
+
+    const mailOptions = {
+      from: gmail_email,
+      to: toEmail,
+      subject: "[no-reply] Cakaatalk 회원가입 인증 코드 안내",
+      html: `<div style="margin:100px;">
                         <h1> 안녕하세요.</h1>
                         <h1> Cakaatalk 인증 요청 메일 입니다.</h1>
                         <br>
@@ -49,30 +54,42 @@ exports.sendAuthMail = async (toEmail) => {
                             <div style="font-size:130%">${authCode}</div>
                         </div>
                         <br/>
-                    </div>`
-        };
+                    </div>`,
+    };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.error('이메일 전송 실패:', error);
-                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 전송 실패");
-            } else {
-                console.log('이메일 전송 성공:', info.response);
-                resolve(authCode);
-            }
-        });
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.error("이메일 전송 실패:", error);
+        throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "이메일 전송 실패");
+      } else {
+        console.log("이메일 전송 성공:", info.response);
+        resolve(authCode);
+      }
     });
-}
+  });
+};
 
 exports.sendFindMail = async (toEmail) => {
-    return new Promise((resolve, reject) => {
-        const authCode = generateRandomString(CODE_LEN);
+  gmail_email = process.env.GMAIL_SENDER;
+  gmail_password = process.env.GMAIL_PASSWORD;
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "stmp.gmail.com",
+    port: "587",
+    auth: {
+      user: gmail_email,
+      pass: gmail_password,
+    },
+  });
 
-        const mailOptions = {
-            from: gmail_email,
-            to: toEmail,
-            subject: '[no-reply] Cakaatalk 비밀번호 찾기 코드 안내',
-            html: `<div style="margin:100px;">
+  return new Promise((resolve, reject) => {
+    const authCode = generateRandomString(CODE_LEN);
+
+    const mailOptions = {
+      from: gmail_email,
+      to: toEmail,
+      subject: "[no-reply] Cakaatalk 비밀번호 찾기 코드 안내",
+      html: `<div style="margin:100px;">
                         <h1> 안녕하세요.</h1>
                         <h1> Cakaatalk 비밀번호 찾기 메일 입니다.</h1>
                         <br>
@@ -84,17 +101,17 @@ exports.sendFindMail = async (toEmail) => {
                             <div style="font-size:130%">${authCode}</div>
                         </div>
                         <br/>
-                    </div>`
-        };
+                    </div>`,
+    };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                console.error('이메일 전송 실패:', error);
-                reject(error);
-            } else {
-                console.log('이메일 전송 성공:', info.response);
-                resolve(authCode);
-            }
-        });
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.error("이메일 전송 실패:", error);
+        reject(error);
+      } else {
+        console.log("이메일 전송 성공:", info.response);
+        resolve(authCode);
+      }
     });
-}
+  });
+};

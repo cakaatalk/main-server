@@ -4,48 +4,53 @@ const WebSocket = require("ws");
 const { initWebSocket } = require("./src/modules/socket/chatws.controller.js");
 const routes = require("./src/route");
 const { dongception } = require("#dongception");
-const dotenv = require("./src/common/dotenv/dotenv.js")
-dotenv();
+const dotenv = require("./src/common/dotenv/dotenv.js");
 
-const app = express();
-const port = 8080;
-const socketPort = 3001;
+async function main() {
+  await dotenv();
 
-const server = http.createServer(app);
+  const app = express();
+  const port = 8080;
+  const socketPort = 3001;
 
-const wss = new WebSocket.Server({
-  server,
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
-initWebSocket(wss);
+  const server = http.createServer(app);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  const wss = new WebSocket.Server({
+    server,
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+  initWebSocket(wss);
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).send();
-  } else {
-    next();
-  }
-});
-app.use("/api", routes);
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
-app.use(dongception);
+    if (req.method === "OPTIONS") {
+      res.status(200).send();
+    } else {
+      next();
+    }
+  });
+  app.use("/api", routes);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+  app.use(dongception);
 
-server.listen(socketPort, () => {
-  console.log("running on port " + socketPort);
-});
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+
+  server.listen(socketPort, () => {
+    console.log("running on port " + socketPort);
+  });
+}
+
+main();
