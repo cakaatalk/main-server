@@ -51,8 +51,14 @@ class UserService {
   }
 
   async updateProfile(userId, imageUrl, comment) {
-    await this.userRepository.updateProfile(userId, imageUrl, comment);
-    return { message: "Profile updated!" };
+    const userProfile = await this.userRepository.findProfileById(userId);
+    if (userProfile.id == null) {
+      await this.userRepository.createProfile(userId, imageUrl, comment);
+    } else {
+      await this.userRepository.updateProfile(userId, imageUrl, comment);
+    }
+
+    return { message: "Profile updated!", ok: true };
   }
 
   async searchUser(nameForSearch) {

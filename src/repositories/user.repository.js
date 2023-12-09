@@ -80,7 +80,7 @@ class UserRepository {
             u.user_name AS name, 
             u.email, 
             p.comment, 
-            p.image_url AS imageURL
+            p.image_url AS profileImage
         FROM 
             FRIENDS f
             JOIN USER u ON f.friend_id = u.id
@@ -135,6 +135,24 @@ class UserRepository {
           if (error) {
             reject(error);
           } else {
+            console.log(results);
+            resolve(results[0] ? new User(results[0]) : null);
+          }
+        }
+      );
+    });
+  }
+
+  createProfile(id, imageUrl, comment) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "INSERT INTO PROFILE (image_url, comment,user_id) VALUES (?, ?,?)",
+        [imageUrl, comment, id],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            console.log(results);
             resolve(results[0] ? new User(results[0]) : null);
           }
         }
