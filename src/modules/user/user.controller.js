@@ -31,7 +31,8 @@ class UserController extends BaseController {
   }
 
   async findAllUser(req, res) {
-    return await this.userService.findAllUser();
+    const userId = req.user.id;
+    return await this.userService.findAllUserWithoutMe(userId);
   }
 
   async updateProfile(req, res) {
