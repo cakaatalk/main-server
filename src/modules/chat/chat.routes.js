@@ -20,7 +20,7 @@ const authController = new AuthController(authService);
 
 const chatRouter = express.Router();
 
-chatRouter.get(
+chatRouter.post(
   "/roomId",
   authController.checkUserSession,
   chatController.getRoomId
