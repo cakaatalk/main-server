@@ -42,6 +42,10 @@ userRouter.get("/searchUser", userController.searchUser);
 userRouter.post("/addUser", userController.addUser);
 userRouter.post("/deleteUser/:userId", userController.deleteUser);
 userRouter.get("/findUser", userController.findUserByEmail);
-userRouter.get("/findAll", userController.findAllUser);
+userRouter.get(
+  "/findAll",
+  authController.checkUserSession,
+  userController.findAllUser
+);
 
 module.exports = userRouter;

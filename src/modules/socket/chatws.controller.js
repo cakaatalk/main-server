@@ -6,9 +6,9 @@ const roomRepository = new RoomRepository(db);
 let rooms = [];
 
 class Chat {
-  constructor(roomId, message, sender, timestamp) {
-    this.roomId = roomId;
-    this.message = message;
+  constructor(room_id, content, sender, timestamp) {
+    this.room_id = room_id;
+    this.content = content;
     this.sender = sender;
     this.timestamp = timestamp;
   }
@@ -61,12 +61,12 @@ function handleWebSocketMessage(ws, message) {
         );
         roomRepository.saveMessage(
           chatData.sender,
-          chatData.roomId,
-          chatData.message,
+          chatData.room_id,
+          chatData.content,
           chatData.timestamp
         );
 
-        broadcastToRoom(chatData.roomId, "getmsg", chatData);
+        broadcastToRoom(chatData.room_id, "getmsg", chatData);
       }
       break;
 

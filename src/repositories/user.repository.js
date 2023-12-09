@@ -109,7 +109,7 @@ class UserRepository {
           u.user_name AS name, 
           u.email, 
           p.comment, 
-          p.image_url AS imageURL
+          p.image_url AS profileImage
         FROM 
           USER u
           LEFT JOIN PROFILE p ON u.id = p.user_id;

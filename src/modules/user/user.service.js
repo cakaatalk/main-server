@@ -42,12 +42,11 @@ class UserService {
     return user;
   }
 
-  async findAllUser() {
-    const user = await this.userRepository.findAll();
-    if (!user) {
-      throw new ErrorResponse(404, "User not found");
-    }
-    return user;
+  async findAllUserWithoutMe(userId) {
+    const users = await this.userRepository.findAll();
+    const filteredUsers = users.filter((user) => user.id !== userId);
+
+    return filteredUsers;
   }
 
   async updateProfile(userId, imageUrl, comment) {
