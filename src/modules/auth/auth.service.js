@@ -13,6 +13,10 @@ class AuthService {
 
     async sendAuthMail(email, res) {
         try {
+            const emailPattern = /@ajou\.ac\.kr$/;
+            if (!email || !emailPattern.test(email)) {
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다. 아주대 메일로 진행해주세요.");
+            }
             await this.validUser(email);
             await this.authRepository.deleteAuthCode(email);
             const authCode = await emailService.sendAuthMail(email);
@@ -87,7 +91,7 @@ class AuthService {
 
             const emailPattern = /@ajou\.ac\.kr$/;
             if (!email || !emailPattern.test(email)) {
-                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다.");
+                throw new ErrorResponse(STATUS_CODES.BAD_REQUEST, "올바른 이메일 형식이 아닙니다. 아주대 메일로 진행해주세요.");
             }
 
             await this.validUser(email);
