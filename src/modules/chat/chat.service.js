@@ -7,6 +7,11 @@ class ChatService {
     this.roomRepository = roomRepository;
   }
 
+  async getRoomList(userId) {
+    let roomList = await this.roomRepository.getRoomList(userId);
+    return roomList;
+  }
+
   async getPersonalRoomId(user1Id, user2Id) {
     let roomId = await this.roomRepository.getPersonalRoomId(user1Id, user2Id);
     if (!roomId) {

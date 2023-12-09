@@ -1,15 +1,14 @@
 const express = require("express");
-
 const http = require("http");
-const socketIo = require("socket.io");
 const WebSocket = require("ws");
 const { initWebSocket } = require("./src/modules/socket/chatws.controller.js");
+const routes = require("./src/route");
+const { dongception } = require("#dongception");
 
 require("dotenv").config();
 const app = express();
 const port = 8080;
 const socketPort = 3001;
-const mode = 1; // 0 is socketio, 1 is websocket
 
 const server = http.createServer(app);
 
@@ -22,9 +21,6 @@ const wss = new WebSocket.Server({
 });
 initWebSocket(wss);
 
-const routes = require("./src/route");
-const { dongception } = require("#dongception");
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -35,7 +31,11 @@ app.use((req, res, next) => {
   );
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
-  next();
+  if (req.method === 'OPTIONS') {
+    res.status(200).send();
+  } else {
+    next();
+  }
 });
 app.use("/api", routes);
 

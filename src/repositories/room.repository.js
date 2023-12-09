@@ -3,6 +3,22 @@ class RoomRepository {
     this.connection = connection;
   }
 
+  getRoomList(userId) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "SELECT * FROM users_in_personalchat WHERE user1_id = (?) OR user2_id = (?)",
+        [userId, userId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+  }
+
   addPersonalRoom(user1Id, user2Id, roomName = "") {
     if (Number(user1Id) > Number(user2Id)) {
       let temp = user1Id;

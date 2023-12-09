@@ -8,6 +8,10 @@ class ChatController extends BaseController {
     this.chatService = chatService;
   }
 
+  async getRoomList(req, res) {
+    return await this.chatService.getRoomList(req.user.id);
+  }
+
   async getPersonalRoomId(req, res) {
     const user1Id = req.user.id;
     const user2Id = req.params.userId;

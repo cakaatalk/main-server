@@ -24,4 +24,10 @@ chatRouter.get(
   chatController.getPersonalRoomId
 );
 
+chatRouter.get(
+  "/roomlist",
+  authController.checkUserSession,
+  chatController.getRoomList
+);
+
 module.exports = chatRouter;
