@@ -19,6 +19,50 @@ class RoomRepository {
     });
   }
 
+  getUsersFromGroupChat(roomId) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "SELECT user_id FROM USERS_IN_GROUPCHAT WHERE room_id= ?",
+        [roomId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.map((el) => el.user_id));
+          }
+        }
+      );
+    });
+  }
+
+  getAllRooms() {
+    return new Promise((resolve, reject) => {
+      this.connection.query("SELECT * FROM ROOMS", [], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getGroupRoomIds(userId) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "SELECT room_id FROM USERS_IN_GROUPCHAT WHERE user_id=?",
+        [userId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.map((el) => el.room_id));
+          }
+        }
+      );
+    });
+  }
+
   addPersonalRoom(user1Id, user2Id, roomName = "") {
     if (Number(user1Id) > Number(user2Id)) {
       let temp = user1Id;
@@ -78,7 +122,32 @@ class RoomRepository {
           if (error) {
             reject(error);
           } else {
-            resolve(result[0]);
+            resolve(result[0].room_id);
+          }
+        }
+      );
+    });
+  }
+
+  addGroupRoom(userIds, roomName = "") {
+    userIds.sort();
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "INSERT INTO ROOMS (room_name) VALUES (?)",
+        [roomName],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            const roomId = results.insertId;
+
+            this.joinGroupChat(userIds, roomId)
+              .then(resolve(roomId))
+              .catch(reject);
+
+            // this.addUsersInPersonalRoom(user1Id, user2Id, roomId)
+            //   .then(resolve(roomId))
+            //   .catch(reject);
           }
         }
       );
@@ -101,10 +170,11 @@ class RoomRepository {
       });
 
       Promise.all(queries)
-        .then(() => resolve())
+        .then(() => resolve(roomId))
         .catch(reject);
     });
   }
+
   getUserFromGroupChat(roomId) {
     return new Promise((resolve, reject) => {
       this.connection.query(

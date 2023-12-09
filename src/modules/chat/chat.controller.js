@@ -12,10 +12,11 @@ class ChatController extends BaseController {
     return await this.chatService.getRoomList(req.user.id);
   }
 
-  async getPersonalRoomId(req, res) {
-    const user1Id = req.user.id;
-    const user2Id = req.params.userId;
-    return await this.chatService.getPersonalRoomId(user1Id, user2Id);
+  async getRoomId(req, res) {
+    const myUserId = req.user.id;
+    const userIds = req.body.userIds;
+    const roomName = req.body.roomName;
+    return await this.chatService.getRoomId(myUserId, userIds, roomName);
   }
 
   async getMessages(req, res) {

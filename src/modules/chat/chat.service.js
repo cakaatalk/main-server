@@ -42,6 +42,39 @@ class ChatService {
 
       roomList.push(temp);
     }
+
+    const groupRoomIds = await this.roomRepository.getGroupRoomIds(userId);
+    const groupRooms = await this.roomRepository.getAllRooms();
+    for (let roomId of groupRoomIds) {
+      let temp = {
+        roomId: roomId,
+        roomName: "",
+        roomImage: "",
+        users: [],
+        lastMessage: "",
+        timestamp: null,
+      };
+
+      for (let x of groupRooms) {
+        if (x.id == roomId) {
+          temp.roomName = x.room_name;
+          break;
+        }
+      }
+
+      const users = await this.roomRepository.getUsersFromGroupChat(roomId);
+      temp.users = users;
+
+      temp.roomImage = "http://localhost:8040/uploads/default-profile.png";
+
+      const lastMessage = (await this.roomRepository.getAllMessage(roomId))[0];
+      if (lastMessage) {
+        temp.lastMessage = lastMessage.content;
+        temp.timestamp = lastMessage.timestamp;
+      }
+
+      roomList.push(temp);
+    }
     roomList.sort((a, b) => {
       // 두 객체 모두에서 timestamp가 null이거나 undefined인 경우를 처리
       if (!a.timestamp) return 1; // a가 null이거나 undefined면 b를 앞으로
@@ -52,12 +85,26 @@ class ChatService {
     return roomList;
   }
 
-  async getPersonalRoomId(user1Id, user2Id) {
-    let roomId = await this.roomRepository.getPersonalRoomId(user1Id, user2Id);
-    if (!roomId) {
-      roomId = await this.roomRepository.addPersonalRoom(user1Id, user2Id, "");
+  async getRoomId(myUserId, userIds, roomName) {
+    let roomId = 0;
+    if (userIds.length == 1) {
+      roomId = await this.roomRepository.getPersonalRoomId(
+        myUserId,
+        userIds[0]
+      );
+      if (!roomId) {
+        roomId = await this.roomRepository.addPersonalRoom(
+          myUserId,
+          userIds[0],
+          ""
+        );
+      }
+      return { roomId: roomId };
     }
-    return roomId;
+    userIds.push(myUserId);
+    userIds.sort();
+    roomId = await this.roomRepository.addGroupRoom(userIds, roomName);
+    return { roomId: roomId };
   }
 
   async getMessage(roomId, startId) {

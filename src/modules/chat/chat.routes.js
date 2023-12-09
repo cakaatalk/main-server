@@ -21,9 +21,9 @@ const authController = new AuthController(authService);
 const chatRouter = express.Router();
 
 chatRouter.get(
-  "/roomId/:userId",
+  "/roomId",
   authController.checkUserSession,
-  chatController.getPersonalRoomId
+  chatController.getRoomId
 );
 
 chatRouter.get(
