@@ -1,23 +1,13 @@
-const WebSocket = require('ws');
+const WebSocket = require("ws");
+const RoomRepository = require("../../repositories/room.repository");
+const db = require("../../common/database");
+const roomRepository = new RoomRepository(db);
 
-let rooms = [
-  {
-    roomName: "방이름",
-    users: [],
-    chat: []
-  },
-  {
-    roomName: "방이름12",
-    users: [],
-    chat: []
-  },
-];
-
-let routeTable = [];
+let rooms = [];
 
 class Chat {
-  constructor(roomName, message, sender, timestamp) {
-    this.roomName = roomName;
+  constructor(roomId, message, sender, timestamp) {
+    this.roomId = roomId;
     this.message = message;
     this.sender = sender;
     this.timestamp = timestamp;
@@ -25,60 +15,58 @@ class Chat {
 }
 
 function initWebSocket(wss) {
-  wss.on('connection', (ws) => {
+  wss.on("connection", (ws) => {
     console.log(`Connected. Socket ID: ${ws._socket.remoteAddress}`);
 
-    ws.on('message', (data) => {
+    ws.on("message", (data) => {
       const message = JSON.parse(data);
       handleWebSocketMessage(ws, message);
     });
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       console.log(`Disconnected. Socket ID: ${ws._socket.remoteAddress}`);
-      
     });
   });
 }
 
 function handleWebSocketMessage(ws, message) {
   switch (message.type) {
-    case 'getRooms':
-      ws.send(JSON.stringify({ type: 'getRooms', data: rooms }));
-      break;
-
-    case 'isRoomExist':
-      const isRoomExist = rooms.find(room => room.roomName === message.data.roomName);
-      ws.send(JSON.stringify({ type: 'isRoomExist', data: isRoomExist }));
-      break;
-
-    case 'createRoom':
-      rooms.push({ roomName: message.data.roomName, users: [message.token], chat: [] });
-      ws.join(message.data.roomName);
-      routeTable.push({roomName:message.data.roomName, token:message.token, ws:ws});
-      broadcastToRoom(message.data.roomName, 'getRoomsChange', rooms);
-      break;
-
-    case 'joinRoom':
-      const roomIndex = rooms.findIndex(room => room.roomName === message.data.roomName);
-      rooms[roomIndex].users.push(message.token);
-      routeTable.push({roomName:message.data.roomName, token:message.token, ws:ws});
-      broadcastToRoom(message.data.roomName, 'getRoomsChange', rooms);
-      break;
-
-    case 'initmsg':
-      const initRoomIndex = rooms.findIndex(room => room.roomName === message.data.roomName);
-      if (rooms[initRoomIndex].chat) {
-        ws.send(JSON.stringify({ type: 'initmsg', data: rooms[initRoomIndex].chat }));
+    case "joinRoom":
+      let exists = false;
+      rooms.forEach((room) => {
+        if (room.roomId == message.data.roomId) {
+          exists = true;
+        }
+      });
+      if (!exists) {
+        rooms[message.data.roomId] = {
+          roomId: message.data.roomId,
+          users: [ws],
+        };
+      } else {
+        rooms[message.data.roomId].users = [
+          ...rooms[message.data.roomId].users,
+          ws,
+        ];
       }
       break;
-
-    case 'sendmsg':
+    case "sendmsg":
       if (message.data) {
-        const timestamp = new Date().toLocaleString();
-        let chatData = new Chat(message.data.roomName, message.data.message, ws._socket.remoteAddress, timestamp);
-        const sendMsgRoomIndex = rooms.findIndex(room => room.roomName === message.data.roomName);
-        rooms[sendMsgRoomIndex].chat = !rooms[sendMsgRoomIndex].chat ? [chatData] : [chatData, ...rooms[sendMsgRoomIndex].chat];
-        broadcastToRoom(message.data.roomName, 'getmsg', rooms[sendMsgRoomIndex].chat);
+        const timestamp = new Date();
+        let chatData = new Chat(
+          message.data.roomId,
+          message.data.message,
+          message.data.userName,
+          timestamp
+        );
+        roomRepository.saveMessage(
+          chatData.sender,
+          chatData.roomId,
+          chatData.message,
+          chatData.timestamp
+        );
+
+        broadcastToRoom(chatData.roomId, "getmsg", chatData);
       }
       break;
 
@@ -87,10 +75,11 @@ function handleWebSocketMessage(ws, message) {
   }
 }
 
-function broadcastToRoom(roomName, type, data) {
-  routeTable.forEach(client => {
-    if(client.ws.readyState === WebSocket.OPEN && client.roomName === roomName) {
-      client.ws.send(JSON.stringify({ type:type, data:data }));
+function broadcastToRoom(roomId, type, data) {
+  console.log(data);
+  rooms[roomId].users.forEach((user) => {
+    if (user.readyState === WebSocket.OPEN) {
+      user.send(JSON.stringify({ type: type, data: data }));
     }
   });
 }

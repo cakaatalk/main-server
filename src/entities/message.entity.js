@@ -1,5 +1,5 @@
 const BaseEntity = require("../common/database/entity/baseEntity");
-class Profile extends BaseEntity {
+class Message extends BaseEntity {
   constructor({
     id = null,
     user_id = null,

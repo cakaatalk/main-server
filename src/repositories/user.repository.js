@@ -29,7 +29,6 @@ class UserRepository {
         "SELECT * FROM PROFILE WHERE user_id = ?",
         [id],
         (error, results) => {
-          console.log(results);
           if (error) {
             reject(error);
           } else {
@@ -77,10 +76,11 @@ class UserRepository {
       this.connection.query(
         `
         SELECT 
+            u.id,
             u.user_name AS name, 
             u.email, 
             p.comment, 
-            p.image_url AS imageURL
+            p.image_url AS profileImage
         FROM 
             FRIENDS f
             JOIN USER u ON f.friend_id = u.id
@@ -102,13 +102,27 @@ class UserRepository {
 
   findAll() {
     return new Promise((resolve, reject) => {
-      this.connection.query("SELECT * FROM USER;", [], (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results.map((user) => new User(user)));
+      this.connection.query(
+        `
+        SELECT 
+          u.id,
+          u.user_name AS name, 
+          u.email, 
+          p.comment, 
+          p.image_url AS imageURL
+        FROM 
+          USER u
+          LEFT JOIN PROFILE p ON u.id = p.user_id;
+            `,
+        [],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
         }
-      });
+      );
     });
   }
 
@@ -121,6 +135,24 @@ class UserRepository {
           if (error) {
             reject(error);
           } else {
+            console.log(results);
+            resolve(results[0] ? new User(results[0]) : null);
+          }
+        }
+      );
+    });
+  }
+
+  createProfile(id, imageUrl, comment) {
+    return new Promise((resolve, reject) => {
+      this.connection.query(
+        "INSERT INTO PROFILE (image_url, comment,user_id) VALUES (?, ?,?)",
+        [imageUrl, comment, id],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            console.log(results);
             resolve(results[0] ? new User(results[0]) : null);
           }
         }
@@ -147,13 +179,13 @@ class UserRepository {
   searchUserByName(name) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "SELECT id, user_name FROM USER WHERE user_name LIKE ?",
+        "SELECT id, user_name,email FROM USER WHERE user_name LIKE ?",
         [name],
         (error, results) => {
           if (error) {
             reject(error);
           } else {
-            resolve(results[0] ? new User(results[0]) : null);
+            resolve(results);
           }
         }
       );

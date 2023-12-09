@@ -16,7 +16,7 @@ class UserController extends BaseController {
 
   async getProfile(req, res) {
     const userId = req.user.id;
-    return await this.userService.getProfile(userId);
+    return await this.userService.getProfile(userId, req.user);
   }
 
   async addFriend(req, res) {

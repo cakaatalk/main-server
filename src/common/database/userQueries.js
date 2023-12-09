@@ -19,5 +19,4 @@ const getProfile = (userId) => {
 module.exports = {
   getvUserFriends,
   getProfile,
-  // 기타 내보낼 함수들...
 };

@@ -119,7 +119,6 @@ class AuthService {
         }
     }
 
-
     async loginAndGiveToken(email, password, res) {
         try {
             const encryptedPassword = await this.encodePassword(password);

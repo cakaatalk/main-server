@@ -8,7 +8,6 @@ const jwtController = require('./../../common/jwt/jwt.controller');
 const authRepository = new AuthRepository(db);
 const authService = new AuthService(authRepository, jwtController);
 const authController = new AuthController(authService);
-const app = express();
 
 const authRouter = express.Router();
 
