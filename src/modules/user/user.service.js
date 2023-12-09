@@ -1,5 +1,6 @@
 const db = require("../../common/database");
 const { ErrorResponse } = require("#dongception");
+const { response } = require("express");
 
 class UserService {
   constructor(userRepository) {
@@ -14,12 +15,15 @@ class UserService {
     return { users };
   }
 
-  async getProfile(userId) {
-    const user = await this.userRepository.findProfileById(userId);
-    if (!user) {
-      throw new ErrorResponse(404, "User not found");
-    }
-    return user;
+  async getProfile(userId, user) {
+    const userProfile = await this.userRepository.findProfileById(userId);
+    return {
+      id: user.id,
+      name: user.user_name,
+      email: user.email,
+      profileImage: userProfile.image_url,
+      comment: userProfile.comment,
+    };
   }
 
   async addFriend(userId, friendId) {
@@ -47,17 +51,30 @@ class UserService {
   }
 
   async updateProfile(userId, imageUrl, comment) {
-    await this.userRepository.updateProfile(userId, imageUrl, comment);
-    return { message: "Profile updated!" };
+    const userProfile = await this.userRepository.findProfileById(userId);
+    if (userProfile.id == null) {
+      await this.userRepository.createProfile(userId, imageUrl, comment);
+    } else {
+      await this.userRepository.updateProfile(userId, imageUrl, comment);
+    }
+
+    return { message: "Profile updated!", ok: true };
   }
 
   async searchUser(nameForSearch) {
-    const user = await this.userRepository.searchUserByName(nameForSearch);
-    if (!user) {
-      throw new ErrorResponse(404, "User not found");
+    let response = [];
+    const users = await this.userRepository.searchUserByName(nameForSearch);
+    for (let el of users) {
+      const userProfile = await this.userRepository.findProfileById(el.id);
+      response.push({
+        id: el.id,
+        name: el.user_name,
+        email: el.email,
+        comment: userProfile.comment || "",
+        profileImage: userProfile.imageUrl || "",
+      });
     }
-
-    return user;
+    return response;
   }
 }
 

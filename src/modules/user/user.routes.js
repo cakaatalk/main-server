@@ -7,10 +7,10 @@ const userRepository = new UserRepository(db);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 
-const AuthController = require('./../auth/auth.controller');
-const AuthService = require('./../auth/auth.service');
-const AuthRepository = require('./../../repositories/auth.repository');
-const jwtController = require('./../../common/jwt/jwt.controller');
+const AuthController = require("./../auth/auth.controller");
+const AuthService = require("./../auth/auth.service");
+const AuthRepository = require("./../../repositories/auth.repository");
+const jwtController = require("./../../common/jwt/jwt.controller");
 
 const authRepository = new AuthRepository(db);
 const authService = new AuthService(authRepository, jwtController);
@@ -24,7 +24,7 @@ userRouter.get(
   userController.getFriendsList
 );
 userRouter.get(
-  "/profile/:userId",
+  "/profile",
   authController.checkUserSession,
   userController.getProfile
 );
