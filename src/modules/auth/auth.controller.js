@@ -7,7 +7,7 @@ class AuthController extends BaseController {
 
     async signUpAndGiveToken(req, res) {
         const user = req.body;
-        return await this.authService.signUpAndGiveToken(user, res);
+        await this.authService.signUpAndGiveToken(user, res);
     }
 
     async loginAndGiveToken(req, res) {
@@ -29,6 +29,26 @@ class AuthController extends BaseController {
 
     async refreshAccessToken(req, res) {
         await this.authService.refreshAccessToken(req, res);
+    }
+
+    async updatePassword(req, res) {
+        const { email, password } = req.body;
+        await this.authService.updatePassword(email, password, res);
+    }
+
+    async sendAuthMail(req, res) {
+        const { email } = req.body;
+        await this.authService.sendAuthMail(email, res);
+    }
+
+    async sendPasswordMail(req, res) {
+        const { email } = req.body;
+        await this.authService.sendPasswordMail(email, res);
+    }
+
+    async verifyMail(req, res) {
+        const { email, authCode } = req.body;
+        await this.authService.verifyMail(email, authCode, res);
     }
 }
 
