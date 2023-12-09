@@ -4,8 +4,9 @@ const WebSocket = require("ws");
 const { initWebSocket } = require("./src/modules/socket/chatws.controller.js");
 const routes = require("./src/route");
 const { dongception } = require("#dongception");
+const dotenv = require("./src/common/dotenv/dotenv.js")
+dotenv();
 
-require("dotenv").config();
 const app = express();
 const port = 8080;
 const socketPort = 3001;
