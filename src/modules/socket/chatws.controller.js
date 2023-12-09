@@ -65,6 +65,7 @@ function handleWebSocketMessage(ws, message) {
           chatData.message,
           chatData.timestamp
         );
+
         broadcastToRoom(chatData.roomId, "getmsg", chatData);
       }
       break;
@@ -75,7 +76,7 @@ function handleWebSocketMessage(ws, message) {
 }
 
 function broadcastToRoom(roomId, type, data) {
-  console.log(data)
+  console.log(data);
   rooms[roomId].users.forEach((user) => {
     if (user.readyState === WebSocket.OPEN) {
       user.send(JSON.stringify({ type: type, data: data }));

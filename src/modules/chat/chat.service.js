@@ -3,12 +3,52 @@ const { ErrorResponse } = require("#dongception");
 const { response } = require("express");
 
 class ChatService {
-  constructor(roomRepository) {
+  constructor(roomRepository, userRepository) {
     this.roomRepository = roomRepository;
+    this.userRepository = userRepository;
   }
 
   async getRoomList(userId) {
-    let roomList = await this.roomRepository.getRoomList(userId);
+    let roomList = [];
+    const allUserInfo = await this.userRepository.findAll();
+    let personalRoomList = await this.roomRepository.getPersonalRoomList(
+      userId
+    );
+    for (let el of personalRoomList) {
+      const otherUserId = el.user1_id == userId ? el.user2_id : el.user1_id;
+      let temp = {
+        roomId: el.room_id,
+        roomName: "",
+        roomImage: "",
+        users: [el.user1_id, el.user2_id],
+        lastMessage: "",
+        timestamp: null,
+      };
+      for (let user of allUserInfo) {
+        if (user.id == otherUserId) {
+          temp.roomName = user.name;
+          temp.roomImage = user.imageURL;
+          break;
+        }
+      }
+
+      const lastMessage = (
+        await this.roomRepository.getAllMessage(el.room_id)
+      )[0];
+      if (lastMessage) {
+        temp.lastMessage = lastMessage.content;
+        temp.timestamp = lastMessage.timestamp;
+      }
+
+      roomList.push(temp);
+    }
+    roomList.sort((a, b) => {
+      // 두 객체 모두에서 timestamp가 null이거나 undefined인 경우를 처리
+      if (!a.timestamp) return 1; // a가 null이거나 undefined면 b를 앞으로
+      if (!b.timestamp) return -1; // b가 null이거나 undefined면 a를 앞으로
+
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
     return roomList;
   }
 
@@ -17,7 +57,6 @@ class ChatService {
     if (!roomId) {
       roomId = await this.roomRepository.addPersonalRoom(user1Id, user2Id, "");
     }
-    console.log(roomId);
     return roomId;
   }
 
@@ -28,13 +67,17 @@ class ChatService {
     };
     if (!startId) {
       const allMessages = await this.roomRepository.getAllMessage(roomId);
-      console.log(allMessages);
       response.messages = allMessages.slice(0, 20);
-      response.nextId = response.messages[20].id;
+      console.log(response.messages);
+      response.nextId = response.messages[19].id;
       return response;
     }
-    response.messages = await this.roomRepository.getMessage(roomId, startId);
-    response.nextId = await this.response.messages[response.messages.length].id;
+    response.messages = await this.roomRepository.getMessageByPaging(
+      roomId,
+      startId
+    );
+    console.log(response.messages);
+    response.nextId = response.messages[response.messages.length - 1].id;
     return response;
   }
 }

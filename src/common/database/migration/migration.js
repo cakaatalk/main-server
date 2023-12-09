@@ -5,7 +5,7 @@ const path = require("path");
 // MySQL 연결 설정
 const connection = mysql.createConnection({
   host: "127.0.0.1",
-  port: 3306,
+  port: 4040,
   user: "root",
   password: "1234",
   database: "cakaatalk",

@@ -3,10 +3,10 @@ class RoomRepository {
     this.connection = connection;
   }
 
-  getRoomList(userId) {
+  getPersonalRoomList(userId) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "SELECT * FROM users_in_personalchat WHERE user1_id = (?) OR user2_id = (?)",
+        "SELECT * FROM USERS_IN_PERSONALCHAT WHERE user1_id = (?) OR user2_id = (?)",
         [userId, userId],
         (error, results) => {
           if (error) {
@@ -138,7 +138,7 @@ class RoomRepository {
   getAllMessage(roomId) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "SELECT * FROM messages WHERE room_id = ? ORDER BY id DESC",
+        "SELECT * FROM MESSAGES WHERE room_id = ? ORDER BY id DESC",
         [roomId],
         (error, results) => {
           if (error) {
@@ -154,7 +154,7 @@ class RoomRepository {
   getMessageByPaging(roomId, startId) {
     return new Promise((resolve, reject) => {
       this.connection.query(
-        "SELECT * FROM messages WHERE room_id = ? AND id < ? AND id >= ? ORDER BY id DESC",
+        "SELECT * FROM MESSAGES WHERE room_id = ? AND id < ? AND id >= ? ORDER BY id DESC",
         [roomId, startId, startId - 20],
         (error, results) => {
           if (error) {
