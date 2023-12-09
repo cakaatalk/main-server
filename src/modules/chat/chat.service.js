@@ -11,9 +11,7 @@ class ChatService {
   async getRoomList(userId) {
     let roomList = [];
     const allUserInfo = await this.userRepository.findAll();
-    let personalRoomList = await this.roomRepository.getPersonalRoomList(
-      userId
-    );
+    let personalRoomList = await this.roomRepository.getPersonalRoomList(userId);
     for (let el of personalRoomList) {
       const otherUserId = el.user1_id == userId ? el.user2_id : el.user1_id;
       let temp = {
@@ -112,13 +110,20 @@ class ChatService {
       nextId: 0,
       messages: [],
     };
-    if (!startId) {
+    if (startId < 1) {
       const allMessages = await this.roomRepository.getAllMessage(roomId);
       response.messages = allMessages.slice(0, 20);
       if (!response.messages.length) {
         return [];
       }
       response.nextId = response.messages[response.messages.length - 1].id;
+      response.messages.sort((a, b) => {
+        // 두 객체 모두에서 timestamp가 null이거나 undefined인 경우를 처리
+        if (!a.timestamp) return 1; // a가 null이거나 undefined면 b를 앞으로
+        if (!b.timestamp) return -1; // b가 null이거나 undefined면 a를 앞으로
+  
+        return new Date(a.timestamp) - new Date(b.timestamp);
+      });
       return response;
     }
     response.messages = await this.roomRepository.getMessageByPaging(

@@ -119,10 +119,16 @@ class RoomRepository {
         "SELECT room_id FROM USERS_IN_PERSONALCHAT WHERE user1_id = ? and user2_id= ? ",
         [user1Id, user2Id],
         (error, result) => {
+          console.log(result);
           if (error) {
             reject(error);
           } else {
-            resolve(result[0].room_id);
+            if(result.length < 1){
+              resolve(null)
+            }else{
+              resolve(result[0].room_id);
+            }
+            
           }
         }
       );

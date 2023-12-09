@@ -22,7 +22,6 @@ class ChatController extends BaseController {
   async getMessages(req, res) {
     const roomId = req.params.roomId;
     const startId = req.query.startId || 0;
-
     return await this.chatService.getMessage(roomId, startId);
   }
 }
