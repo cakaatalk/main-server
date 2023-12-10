@@ -75,7 +75,8 @@ class ChatService {
       const users = await this.roomRepository.getUsersFromGroupChat(roomId);
       temp.users = users;
 
-      temp.roomImage = "http://localhost:8040/uploads/default-profile.png";
+      temp.roomImage =
+        "https://cakaatalk.aolda.net/uploads/uploads/default-group.png";
 
       const lastMessage = (await this.roomRepository.getAllMessage(roomId))[0];
       if (lastMessage) {
