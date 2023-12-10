@@ -43,10 +43,28 @@ class UserService {
   }
 
   async findAllUserWithoutMe(userId) {
+    let response = [];
     const users = await this.userRepository.findAll();
     const filteredUsers = users.filter((user) => user.id !== userId);
+    const friends = await this.userRepository.findFriends(userId);
+    for (let user of filteredUsers) {
+      let temp = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        comment: user.comment,
+        profileImage: user.profileImage,
+        isFriend: false,
+      };
+      for (let el of friends) {
+        if (user.id == el.id) {
+          temp.isFriend = true;
+        }
+      }
+      response.push(temp);
+    }
 
-    return filteredUsers;
+    return response;
   }
 
   async updateProfile(userId, imageUrl, comment) {
