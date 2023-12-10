@@ -1,51 +1,53 @@
 const express = require("express");
-const UserService = require("./user.service");
-const UserController = require("./user.controller");
-const UserRepository = require("../../repositories/user.repository");
-const db = require("../../common/database");
-const userRepository = new UserRepository(db);
-const userService = new UserService(userRepository);
-const userController = new UserController(userService);
 
-const AuthController = require("./../auth/auth.controller");
-const AuthService = require("./../auth/auth.service");
-const AuthRepository = require("./../../repositories/auth.repository");
-const jwtController = require("./../../common/jwt/jwt.controller");
+class UserRouter {
+  constructor(authController, userController) {
+    this.authController = authController;
+    this.userController = userController;
+    this.router = express.Router();
+    this.initializeRoutes();
+  }
 
-const authRepository = new AuthRepository(db);
-const authService = new AuthService(authRepository, jwtController);
-const authController = new AuthController(authService);
+  initializeRoutes() {
+    this.router.get(
+      "/friends",
+      this.authController.checkUserSession,
+      this.userController.getFriendsList
+    );
 
-const userRouter = express.Router();
+    this.router.get(
+      "/profile",
+      this.authController.checkUserSession,
+      this.userController.getProfile
+    );
 
-userRouter.get(
-  "/friends",
-  authController.checkUserSession,
-  userController.getFriendsList
-);
-userRouter.get(
-  "/profile",
-  authController.checkUserSession,
-  userController.getProfile
-);
-userRouter.post(
-  "/addFriend",
-  authController.checkUserSession,
-  userController.addFriend
-);
-userRouter.post(
-  "/updateProfile",
-  authController.checkUserSession,
-  userController.updateProfile
-);
-userRouter.get("/searchUser", userController.searchUser);
-userRouter.post("/addUser", userController.addUser);
-userRouter.post("/deleteUser/:userId", userController.deleteUser);
-userRouter.get("/findUser", userController.findUserByEmail);
-userRouter.get(
-  "/findAll",
-  authController.checkUserSession,
-  userController.findAllUser
-);
+    this.router.post(
+      "/addFriend",
+      this.authController.checkUserSession,
+      this.userController.addFriend
+    );
 
-module.exports = userRouter;
+    this.router.post(
+      "/updateProfile",
+      this.authController.checkUserSession,
+      this.userController.updateProfile
+    );
+
+    this.router.get("/searchUser", this.userController.searchUser);
+    this.router.post("/addUser", this.userController.addUser);
+    this.router.post("/deleteUser/:userId", this.userController.deleteUser);
+    this.router.get("/findUser", this.userController.findUserByEmail);
+
+    this.router.get(
+      "/findAll",
+      this.authController.checkUserSession,
+      this.userController.findAllUser
+    );
+  }
+
+  getRouter() {
+    return this.router;
+  }
+}
+
+module.exports = UserRouter;

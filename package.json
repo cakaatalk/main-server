@@ -24,6 +24,9 @@
   "author": "",
   "license": "ISC",
   "imports": {
-    "#dongception": "./src/common/dongpring/dongception.js"
+    "#dongception": "./src/common/dongpring/dongception.js",
+    "#module/*": "./src/modules/*",
+    "#repository/*": "./src/repositories/*",
+    "#common/*": "./src/common/*"
   }
 }

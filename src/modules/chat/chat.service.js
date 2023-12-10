@@ -146,6 +146,13 @@ class ChatService {
       return [];
     }
     response.nextId = response.messages[response.messages.length - 1].id;
+    response.messages.sort((a, b) => {
+      // 두 객체 모두에서 timestamp가 null이거나 undefined인 경우를 처리
+      if (!a.timestamp) return 1; // a가 null이거나 undefined면 b를 앞으로
+      if (!b.timestamp) return -1; // b가 null이거나 undefined면 a를 앞으로
+
+      return new Date(a.timestamp) - new Date(b.timestamp);
+    });
     return response;
   }
 }
