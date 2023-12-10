@@ -7,6 +7,16 @@ class ChatService {
     this.roomRepository = roomRepository;
     this.userRepository = userRepository;
   }
+  async getRoomInfo(userId, roomId) {
+    const allRooms = await this.getRoomList(userId);
+
+    for (let room of allRooms) {
+      if (room.roomId == roomId) {
+        return { roomName: room.roomName, roomSize: room.users.length };
+      }
+    }
+    return { roomName: "", roomSize: 0 };
+  }
 
   async getRoomList(userId) {
     let roomList = [];

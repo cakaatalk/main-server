@@ -123,12 +123,11 @@ class RoomRepository {
           if (error) {
             reject(error);
           } else {
-            if(result.length < 1){
-              resolve(null)
-            }else{
+            if (result.length < 1) {
+              resolve(null);
+            } else {
               resolve(result[0].room_id);
             }
-            
           }
         }
       );

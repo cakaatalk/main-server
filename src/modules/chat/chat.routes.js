@@ -27,6 +27,12 @@ chatRouter.post(
 );
 
 chatRouter.get(
+  "/roomInfo/:roomId",
+  authController.checkUserSession,
+  chatController.getRoomInfo
+);
+
+chatRouter.get(
   "/roomList",
   authController.checkUserSession,
   chatController.getRoomList
